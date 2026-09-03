@@ -37,8 +37,21 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 - [x] ~~Mew failsafe.~~ Mew is now recoverable: if the battle ends in a `DRAW`
       (fled, fainted, out of Balls) the caught flag is not set, and examining
       the hollow re-triggers the encounter.
-- [ ] **Playtest the failsafe.** Knock Mew out or flee, then re-examine the
-      hollow — it should say "It is still here" and battle again.
+- [x] ~~Playtest the failsafe.~~ Headless (PyBoy) playtest found a real bug:
+      `VermilionPortMewBattleScript` called `reloadmapafterbattle` *before*
+      the `ifequal DRAW` check and `setevent EVENT_FOUGHT_TRUCK_MEW` —
+      `reloadmapafterbattle` internally stops script execution and reloads
+      the map, so those two lines never ran, on *any* battle outcome. Fixed
+      by matching vanilla's own pattern (see `Route36.asm`'s Sudowoodo
+      script): resolve the result and set the event first, call
+      `reloadmapafterbattle` last, in each branch.
+- [ ] **Hollow goes dead after the Mew battle.** Separate from the above: in
+      headless testing, once you've fought Mew and returned to the map, the
+      crate/hollow object stops responding to `A` entirely — no text, no
+      re-battle, nothing — even though other NPCs on the same map (tested:
+      the Super Nerd) remain interactive right after the same battle. Not
+      yet root-caused; needs on-device confirmation since PyBoy's object/
+      script emulation could conceivably differ from real hardware here.
 
 ### Gorochu
 

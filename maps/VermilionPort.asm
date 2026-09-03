@@ -224,9 +224,13 @@ VermilionPortTruckScript:
 VermilionPortMewBattleScript:
 	loadwildmon MEW, 30
 	startbattle
-	reloadmapafterbattle
-	ifequal DRAW, VermilionPortEndScript
+	ifequal DRAW, VermilionPortMewFledScript
 	setevent EVENT_FOUGHT_TRUCK_MEW
+	reloadmapafterbattle
+	end
+
+VermilionPortMewFledScript:
+	reloadmapafterbattle
 	end
 
 VermilionPortHollowScript:
