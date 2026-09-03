@@ -83,7 +83,11 @@ def run(rom_path, out_dir, frames_to_newgame=900):
 
     out_dir.mkdir(parents=True, exist_ok=True)
     shot = out_dir / "smoke_overworld.png"
-    pb.screen.image.convert("RGB").save(shot)
+    try:
+        pb.screen.image.convert("RGB").save(shot)
+    except Exception as e:  # screenshot is a nice-to-have; never fail the checks over it
+        print(f"screenshot skipped: {e}")
+        shot = None
     pb.stop()
 
     print(f"player name : {name!r}")
