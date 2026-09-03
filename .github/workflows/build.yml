@@ -45,9 +45,12 @@ jobs:
 
       - name: Smoke test (headless)
         run: |
-          sudo apt-get install -yq libsdl2-2.0-0
-          pip install --quiet pyboy
-          python3 test/smoke_test.py pokecrystal_devwarp.gbc --out artifacts
+          sudo apt-get install -yq libsdl2-2.0-0 python3-pip
+          # Ubuntu 24.04 marks the system Python as externally managed and
+          # refuses a plain `pip install`; a venv sidesteps that cleanly.
+          python3 -m venv .venv
+          .venv/bin/pip install --quiet pyboy
+          .venv/bin/python test/smoke_test.py pokecrystal_devwarp.gbc --out artifacts
 
       - name: Name and stamp ROMs
         run: |
