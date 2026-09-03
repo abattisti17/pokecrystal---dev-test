@@ -43,12 +43,19 @@ jobs:
       - name: Build devwarp ROM
         run: make devwarp -j$(nproc)
 
+      - name: Smoke test (headless)
+        run: |
+          sudo apt-get install -yq libsdl2-2.0-0
+          pip install --quiet pyboy
+          python3 test/smoke_test.py pokecrystal_devwarp.gbc --out artifacts
+
       - name: Name and stamp ROMs
         run: |
           mkdir -p dist
           STAMP="${{ steps.ver.outputs.stamp }}"
           cp pokecrystal.gbc          "dist/LostLegends-${STAMP}.gbc"
           cp pokecrystal_devwarp.gbc  "dist/LostLegends-devwarp.gbc"
+          cp artifacts/smoke_overworld.png dist/ 2>/dev/null || true
           {
             echo "Lost Legends ${STAMP}"
             echo "commit:  $(git rev-parse HEAD)"
@@ -58,6 +65,7 @@ jobs:
           } | tee dist/BUILDINFO.txt
 
       - name: Upload ROMs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: LostLegends-${{ steps.ver.outputs.stamp }}
