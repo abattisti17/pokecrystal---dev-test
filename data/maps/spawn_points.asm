@@ -16,7 +16,11 @@ SpawnPoints:
 	spawn PEWTER_CITY,                13, 26
 	spawn CERULEAN_CITY,              19, 22
 	spawn ROUTE_10_NORTH,             11,  2
+if DEF(_DEVWARP)
+	spawn VERMILION_PORT,             13, 11 ; devwarp: land on the dock
+else
 	spawn VERMILION_CITY,              9,  6
+endc
 	spawn LAVENDER_TOWN,               5,  6
 	spawn SAFFRON_CITY,                9, 30
 	spawn CELADON_CITY,               29, 10

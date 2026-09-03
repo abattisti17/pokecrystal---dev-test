@@ -75,7 +75,7 @@ endc
 	ld [wPrevLandmark], a
 
 if DEF(_DEVWARP)
-	ld a, DEVWARP_SPAWN
+	ld a, SPAWN_VERMILION
 else
 	ld a, SPAWN_HOME
 endc
@@ -88,11 +88,14 @@ endc
 if DEF(_DEVWARP)
 ; Lost Legends dev fast-start.
 ; Skips Oak's speech and the naming screen, hardcodes a player name,
-; and drops the player at DEVWARP_SPAWN with one Pokemon in the party.
+; and drops the player at the devwarp spawn (see data/maps/spawn_points.asm).
 ; Build with: make devwarp
 DevWarp_QuickStart:
 	farcall InitClock
-	farcall InitGender
+
+	; hardcode gender instead of showing the selection menu
+	ld a, DEVWARP_GENDER
+	ld [wPlayerGender], a
 
 	; hardcode the player name (CopyName2 copies de -> hl)
 	ld a, '@'
@@ -114,6 +117,17 @@ DevWarp_QuickStart:
 	ret nc
 	ld b, CAUGHT_BY_UNKNOWN
 	farcall SetGiftPartyMonCaughtData
+
+	; overwrite move slot 4 with STRENGTH so field testing works immediately
+	ld a, DEVWARP_FIELD_MOVE
+	ld [wPartyMon1Moves + 3], a
+	ld a, 15
+	ld [wPartyMon1PP + 3], a
+
+	; grant the badge that gates Strength
+	ld de, ENGINE_PLAINBADGE
+	ld b, SET_FLAG
+	farcall EngineFlagAction
 	ret
 
 .DevName:
