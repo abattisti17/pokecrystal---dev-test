@@ -129,6 +129,19 @@ DevWarp_QuickStart:
 	ld a, 15
 	ld [wPartyMon1PP + 3], a
 
+	; second party slot -- for trying out whatever is being worked on
+	xor a ; PARTYMON
+	ld [wMonType], a
+	ld a, DEVWARP_SPECIES_2
+	ld [wCurPartySpecies], a
+	ld a, DEVWARP_LEVEL_2
+	ld [wCurPartyLevel], a
+	predef TryAddMonToParty
+	jr nc, .skip_second
+	ld b, CAUGHT_BY_UNKNOWN
+	farcall SetGiftPartyMonCaughtData
+.skip_second
+
 	; grant the badge that gates Strength
 	ld de, ENGINE_PLAINBADGE
 	ld b, SET_FLAG

@@ -34,6 +34,7 @@ ADDR = {
 }
 
 CYNDAQUIL = 155
+GOROCHU = 252
 STRENGTH = 70
 VERMILION_PORT = (15, 2)  # (map group, map number)
 
@@ -77,6 +78,7 @@ def run(rom_path, out_dir, frames_to_newgame=900):
     number = mem[ADDR["wMapNumber"]]
     party_count = mem[ADDR["wPartyCount"]]
     species = mem[ADDR["wPartySpecies"]]
+    species2 = mem[ADDR["wPartySpecies"] + 1]
     moves = [mem[ADDR["wPartyMon1Moves"] + i] for i in range(4)]
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -87,15 +89,16 @@ def run(rom_path, out_dir, frames_to_newgame=900):
     print(f"player name : {name!r}")
     print(f"map         : group {group}, number {number}")
     print(f"party count : {party_count}")
-    print(f"species     : {species}")
+    print(f"species     : {species}, {species2}")
     print(f"moves       : {moves}")
     print(f"screenshot  : {shot}")
 
     checks = [
         ("player name is DEV", name == "DEV"),
         ("spawned in Vermilion Port", (group, number) == VERMILION_PORT),
-        ("exactly one party member", party_count == 1),
+        ("two party members", party_count == 2),
         ("starter is Cyndaquil", species == CYNDAQUIL),
+        ("slot 2 is Gorochu", species2 == GOROCHU),
         ("starter knows Strength", STRENGTH in moves),
     ]
 
