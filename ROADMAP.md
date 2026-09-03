@@ -5,7 +5,7 @@ project state; `VERSION` holds the current version number.
 
 ---
 
-## Current state — v0.1.1
+## Current state — v0.1.2
 
 **Pipeline is proven end to end.** Edit → commit → GitHub Actions build →
 download artifact → sideload into SameBoy on iOS. No local machine required.
@@ -15,8 +15,8 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 | RGBDS 1.0.1 + pokecrystal build | working, byte-identical vanilla verified |
 | GitHub Actions build + artifact upload | working |
 | Version stamping (`vX.Y.Z-<sha>`) | working |
-| Devwarp fast-start build | fixed in v0.1.1, needs confirmation on device |
-| Mew under the crate, Vermilion Port | implemented, needs playtest |
+| Devwarp fast-start build | working; spawns on the dock with Strength + badge |
+| Mew under the crate, Vermilion Port | placed on walkable deck, needs playtest |
 
 **Reference checksums**
 
@@ -31,11 +31,8 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 
 ### Blocking / next up
 
-- [ ] **Confirm devwarp works on device.** v0.1.1 fixed two bugs (swapped
-      `CopyName2` registers producing a garbage player name; unset `wMonType`
-      corrupting `wOTPartyCount`). Unverified on hardware.
-- [ ] **Playtest the Mew encounter.** Needs Plain Badge + a party member that
-      knows Strength.
+- [ ] **Playtest the Mew encounter.** Devwarp grants the badge and Strength,
+      so it should be reachable within seconds of booting.
 - [ ] **Mew failsafe.** Currently a one-shot: no handling for fleeing, fainting,
       or running out of Poké Balls. Sudowoodo's script (`maps/Route36.asm`) is
       the model — it handles `DRAW` and re-encounters. Decide whether Mew should
@@ -66,6 +63,9 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 - [ ] **Custom crate/truck sprite.** Currently `SPRITE_FAMICOM` stands in as an
       unmarked cargo crate. Works, but a purpose-drawn 16×16 overworld sprite
       would be better.
+- [ ] **Devwarp starter moveset is blunt.** `DEVWARP_FIELD_MOVE` overwrites move
+      slot 4 outright, destroying whatever was there. Fine for testing; don't
+      read anything into the starter's moves.
 
 ---
 
@@ -105,5 +105,9 @@ DEV, grants one Pokémon, and spawns at a configurable point. Tune it in
   the only real verification.
 - **Event flags** for this project are allocated from the unused block at the
   end of `constants/event_flags.asm` (46 remaining).
+- **Object placement must be checked against the `.blk` map.** Coordinates are
+  tile-based; block `(x/2, y/2)` indexes into the `.blk`. Vermilion Port's
+  walkable deck is block row 5 (tile rows 10–11). Placing an object on a
+  decorative pier-face block puts it visibly out over the water.
 - Upstream pokecrystal has moved to RGBDS 1.0.3; the workflow pins 1.0.1, which
   still builds correctly.
