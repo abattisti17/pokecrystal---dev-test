@@ -26,17 +26,22 @@ jobs:
           sudo make -C /tmp/rgbds install PREFIX=/usr/local
           rgbasm --version
 
-      - name: Build ROM
+      - name: Build release ROM
         run: make -j$(nproc)
 
-      - name: Report checksum
-        run: |
-          sha1sum pokecrystal.gbc
-          ls -la pokecrystal.gbc
+      - name: Build devwarp ROM
+        run: make devwarp -j$(nproc)
 
-      - name: Upload ROM
+      - name: Report checksums
+        run: |
+          echo "release:"; sha1sum pokecrystal.gbc
+          echo "devwarp:"; sha1sum pokecrystal_devwarp.gbc
+
+      - name: Upload ROMs
         uses: actions/upload-artifact@v4
         with:
           name: lost-legends-rom
-          path: pokecrystal.gbc
+          path: |
+            pokecrystal.gbc
+            pokecrystal_devwarp.gbc
           retention-days: 30

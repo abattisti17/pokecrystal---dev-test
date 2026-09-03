@@ -63,19 +63,50 @@ NewGame:
 	ld [wDebugFlags], a
 	call ResetWRAM
 	call NewGame_ClearTilemapEtc
+if DEF(_DEVWARP)
+	call DevWarp_QuickStart
+else
 	call PlayerProfileSetup
 	call OakSpeech
+endc
 	call InitializeWorld
 
 	ld a, LANDMARK_NEW_BARK_TOWN
 	ld [wPrevLandmark], a
 
+if DEF(_DEVWARP)
+	ld a, DEVWARP_SPAWN
+else
 	ld a, SPAWN_HOME
+endc
 	ld [wDefaultSpawnpoint], a
 
 	ld a, MAPSETUP_WARP
 	ldh [hMapEntryMethod], a
 	jp FinishContinueFunction
+
+if DEF(_DEVWARP)
+; Lost Legends dev fast-start.
+; Skips Oak's speech and the naming screen, hardcodes a player name,
+; and drops the player at DEVWARP_SPAWN with one Pokemon in the party.
+; Build with: make devwarp
+DevWarp_QuickStart:
+	farcall InitClock
+	farcall InitGender
+	ld hl, .DevName
+	ld de, wStringBuffer2
+	call CopyName2
+	call StorePlayerName
+	ld a, DEVWARP_SPECIES
+	ld [wCurPartySpecies], a
+	ld a, DEVWARP_LEVEL
+	ld [wCurPartyLevel], a
+	predef TryAddMonToParty
+	ret
+
+.DevName:
+	db "DEV@"
+endc
 
 PlayerProfileSetup:
 	farcall CheckMobileAdapterStatus

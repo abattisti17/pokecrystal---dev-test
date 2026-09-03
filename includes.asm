@@ -71,4 +71,8 @@ if DEF(_CRYSTAL11_VC)
 INCLUDE "vc/pokecrystal11.constants.asm"
 endc
 
+if DEF(_DEVWARP)
+INCLUDE "constants/devwarp_constants.asm"
+endc
+
 INCLUDE "macros/legacy.asm"
