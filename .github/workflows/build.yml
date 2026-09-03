@@ -12,6 +12,17 @@ jobs:
     steps:
       - name: Check out pokecrystal
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute version stamp
+        id: ver
+        run: |
+          VERSION=$(cat VERSION)
+          SHA=$(git rev-parse --short=7 HEAD)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          echo "stamp=v${VERSION}-${SHA}" >> $GITHUB_OUTPUT
 
       - name: Install build dependencies
         run: |
@@ -32,16 +43,23 @@ jobs:
       - name: Build devwarp ROM
         run: make devwarp -j$(nproc)
 
-      - name: Report checksums
+      - name: Name and stamp ROMs
         run: |
-          echo "release:"; sha1sum pokecrystal.gbc
-          echo "devwarp:"; sha1sum pokecrystal_devwarp.gbc
+          mkdir -p dist
+          STAMP="${{ steps.ver.outputs.stamp }}"
+          cp pokecrystal.gbc          "dist/LostLegends-${STAMP}.gbc"
+          cp pokecrystal_devwarp.gbc  "dist/LostLegends-devwarp.gbc"
+          {
+            echo "Lost Legends ${STAMP}"
+            echo "commit:  $(git rev-parse HEAD)"
+            echo "built:   $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo ""
+            sha1sum dist/*.gbc
+          } | tee dist/BUILDINFO.txt
 
       - name: Upload ROMs
         uses: actions/upload-artifact@v4
         with:
-          name: lost-legends-rom
-          path: |
-            pokecrystal.gbc
-            pokecrystal_devwarp.gbc
+          name: LostLegends-${{ steps.ver.outputs.stamp }}
+          path: dist/
           retention-days: 30
