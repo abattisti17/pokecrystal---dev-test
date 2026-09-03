@@ -83,6 +83,12 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 
 ---
 
+## Branch plan
+
+Vignette development plan and shared-resource allocation live in
+[BRANCHES.md](BRANCHES.md). Claim event flags and pic banks there before
+starting a branch.
+
 ## Version roadmap
 
 - **v0.1** — Mew under the truck/crate ✅, Press B catch rate boost, one beta
