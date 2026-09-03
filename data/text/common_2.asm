@@ -1568,9 +1568,9 @@ _OakText5::
 	line "everything about"
 	cont "#MON yet."
 
-	para "There are still"
-	line "many mysteries to"
-	cont "solve."
+	para "Some were known"
+	line "once, and then"
+	cont "forgotten."
 
 	para "That's why I study"
 	line "#MON every day."
