@@ -243,16 +243,19 @@ VermilionPortTruckShiftMovement:
 	step_end
 
 VermilionPortTruckText:
-	text "It's a delivery"
-	line "truck. Nobody has"
-	cont "come for it."
+	text "A cargo crate,"
+	line "left on the dock."
+
+	para "No shipping mark."
+	line "Nobody has come"
+	cont "for it."
 
 	para "The ground beneath"
 	line "it is worn smooth."
 	done
 
 VermilionPortTruckPushText:
-	text "The truck might"
+	text "The crate might"
 	line "move."
 
 	para "Use STRENGTH?"
@@ -260,7 +263,7 @@ VermilionPortTruckPushText:
 
 VermilionPortTruckRevealText:
 	text "<PLAYER> pushed the"
-	line "truck aside."
+	line "crate aside."
 
 	para "There is a hollow"
 	line "in the ground."
@@ -395,4 +398,4 @@ VermilionPort_MapEvents:
 	object_event  7, 17, SPRITE_SAILOR, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortSailorAtGangwayScript, EVENT_VERMILION_PORT_SAILOR_AT_GANGWAY
 	object_event  6, 11, SPRITE_SAILOR, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortSailorScript, -1
 	object_event 11, 11, SPRITE_SUPER_NERD, SPRITEMOVEDATA_WALK_LEFT_RIGHT, 2, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortSuperNerdScript, -1
-	object_event 15, 13, SPRITE_BOULDER, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortTruckScript, -1
+	object_event 15, 13, SPRITE_FAMICOM, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortTruckScript, -1

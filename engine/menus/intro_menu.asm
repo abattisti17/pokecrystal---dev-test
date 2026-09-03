@@ -93,15 +93,27 @@ if DEF(_DEVWARP)
 DevWarp_QuickStart:
 	farcall InitClock
 	farcall InitGender
-	ld hl, .DevName
-	ld de, wStringBuffer2
+
+	; hardcode the player name (CopyName2 copies de -> hl)
+	ld a, '@'
+	ld bc, NAME_LENGTH
+	ld hl, wPlayerName
+	call ByteFill
+	ld hl, wPlayerName
+	ld de, .DevName
 	call CopyName2
-	call StorePlayerName
+
+	; grant one party Pokemon
+	xor a ; PARTYMON
+	ld [wMonType], a
 	ld a, DEVWARP_SPECIES
 	ld [wCurPartySpecies], a
 	ld a, DEVWARP_LEVEL
 	ld [wCurPartyLevel], a
 	predef TryAddMonToParty
+	ret nc
+	ld b, CAUGHT_BY_UNKNOWN
+	farcall SetGiftPartyMonCaughtData
 	ret
 
 .DevName:
