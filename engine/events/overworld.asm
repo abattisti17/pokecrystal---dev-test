@@ -1053,6 +1053,21 @@ BouldersMayMoveText:
 	text_far _BouldersMayMoveText
 	text_end
 
+; Lost Legends: sets wScriptVar to 1 if any party member knows STRENGTH.
+; Used by the Vermilion Port truck. Unlike TryStrengthOW this does not
+; care whether Strength is currently toggled on in the field.
+LostLegendsCheckStrengthKnown::
+	ld d, STRENGTH
+	call CheckPartyMove
+	jr c, .no
+	ld a, 1
+	ld [wScriptVar], a
+	ret
+.no:
+	xor a
+	ld [wScriptVar], a
+	ret
+
 TryStrengthOW:
 	ld d, STRENGTH
 	call CheckPartyMove

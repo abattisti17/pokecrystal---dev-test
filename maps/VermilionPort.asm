@@ -2,6 +2,7 @@
 	const VERMILIONPORT_SAILOR1
 	const VERMILIONPORT_SAILOR2
 	const VERMILIONPORT_SUPER_NERD
+	const VERMILIONPORT_TRUCK
 
 VermilionPort_MapScripts:
 	def_scene_scripts
@@ -192,6 +193,87 @@ VermilionPortSuperNerdScript:
 	closetext
 	end
 
+VermilionPortTruckScript:
+	checkevent EVENT_LOST_LEGENDS_TRUCK_MOVED
+	iftrue .AlreadyMoved
+	opentext
+	writetext VermilionPortTruckText
+	waitbutton
+	closetext
+	checkflag ENGINE_PLAINBADGE
+	iffalse .End
+	callasm LostLegendsCheckStrengthKnown
+	iffalse .End
+	opentext
+	writetext VermilionPortTruckPushText
+	yesorno
+	iffalse .End
+	closetext
+	waitsfx
+	playsound SFX_STRENGTH
+	applymovement VERMILIONPORT_TRUCK, VermilionPortTruckShiftMovement
+	pause 20
+	opentext
+	writetext VermilionPortTruckRevealText
+	waitbutton
+	closetext
+	setevent EVENT_LOST_LEGENDS_TRUCK_MOVED
+	playsound SFX_ENTER_DOOR
+	waitsfx
+	pause 30
+	loadwildmon MEW, 30
+	startbattle
+	setevent EVENT_FOUGHT_TRUCK_MEW
+	reloadmapafterbattle
+	end
+
+.AlreadyMoved:
+	opentext
+	writetext VermilionPortTruckEmptyText
+	waitbutton
+	closetext
+	end
+
+.End:
+	closetext
+	end
+
+VermilionPortTruckShiftMovement:
+	slow_step LEFT
+	step_end
+
+VermilionPortTruckText:
+	text "It's a delivery"
+	line "truck. Nobody has"
+	cont "come for it."
+
+	para "The ground beneath"
+	line "it is worn smooth."
+	done
+
+VermilionPortTruckPushText:
+	text "The truck might"
+	line "move."
+
+	para "Use STRENGTH?"
+	done
+
+VermilionPortTruckRevealText:
+	text "<PLAYER> pushed the"
+	line "truck aside."
+
+	para "There is a hollow"
+	line "in the ground."
+
+	para "Something has been"
+	line "sleeping here."
+	done
+
+VermilionPortTruckEmptyText:
+	text "The hollow in the"
+	line "ground is empty."
+	done
+
 VermilionPortHiddenIron:
 	hiddenitem IRON, EVENT_VERMILION_PORT_HIDDEN_IRON
 
@@ -313,3 +395,4 @@ VermilionPort_MapEvents:
 	object_event  7, 17, SPRITE_SAILOR, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortSailorAtGangwayScript, EVENT_VERMILION_PORT_SAILOR_AT_GANGWAY
 	object_event  6, 11, SPRITE_SAILOR, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortSailorScript, -1
 	object_event 11, 11, SPRITE_SUPER_NERD, SPRITEMOVEDATA_WALK_LEFT_RIGHT, 2, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortSuperNerdScript, -1
+	object_event 15, 13, SPRITE_BOULDER, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortTruckScript, -1
