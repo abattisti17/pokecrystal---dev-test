@@ -43,14 +43,29 @@ jobs:
       - name: Build devwarp ROM
         run: make devwarp -j$(nproc)
 
+      - name: Set up Python for smoke test
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Smoke test (headless)
+        id: smoke
+        continue-on-error: true
         run: |
-          sudo apt-get install -yq libsdl2-2.0-0 python3-pip
-          # Ubuntu 24.04 marks the system Python as externally managed and
-          # refuses a plain `pip install`; a venv sidesteps that cleanly.
-          python3 -m venv .venv
-          .venv/bin/pip install --quiet pyboy
-          .venv/bin/python test/smoke_test.py pokecrystal_devwarp.gbc --out artifacts
+          sudo apt-get install -yq libsdl2-2.0-0
+          pip install pyboy 2>&1 | tail -3
+          set +e
+          python test/smoke_test.py pokecrystal_devwarp.gbc --out artifacts 2>&1 \
+            | grep -v "Skipping .sym line" | tee smoke.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          {
+            echo "## Smoke test"
+            echo '```'
+            cat smoke.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
 
       - name: Name and stamp ROMs
         run: |
@@ -59,6 +74,7 @@ jobs:
           cp pokecrystal.gbc          "dist/LostLegends-${STAMP}.gbc"
           cp pokecrystal_devwarp.gbc  "dist/LostLegends-devwarp.gbc"
           cp artifacts/smoke_overworld.png dist/ 2>/dev/null || true
+          cp smoke.log dist/ 2>/dev/null || true
           {
             echo "Lost Legends ${STAMP}"
             echo "commit:  $(git rev-parse HEAD)"
