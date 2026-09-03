@@ -195,19 +195,19 @@ VermilionPortSuperNerdScript:
 
 VermilionPortTruckScript:
 	checkevent EVENT_LOST_LEGENDS_TRUCK_MOVED
-	iftrue .AlreadyMoved
+	iftrue VermilionPortHollowScript
 	opentext
 	writetext VermilionPortTruckText
 	waitbutton
 	closetext
 	checkflag ENGINE_PLAINBADGE
-	iffalse .End
+	iffalse VermilionPortEndScript
 	callasm LostLegendsCheckStrengthKnown
-	iffalse .End
+	iffalse VermilionPortEndScript
 	opentext
 	writetext VermilionPortTruckPushText
 	yesorno
-	iffalse .End
+	iffalse VermilionPortTruckDoneScript
 	closetext
 	waitsfx
 	playsound SFX_STRENGTH
@@ -221,21 +221,35 @@ VermilionPortTruckScript:
 	playsound SFX_ENTER_DOOR
 	waitsfx
 	pause 30
+VermilionPortMewBattleScript:
 	loadwildmon MEW, 30
 	startbattle
-	setevent EVENT_FOUGHT_TRUCK_MEW
 	reloadmapafterbattle
+	ifequal DRAW, VermilionPortEndScript
+	setevent EVENT_FOUGHT_TRUCK_MEW
 	end
 
-.AlreadyMoved:
+VermilionPortHollowScript:
+	checkevent EVENT_FOUGHT_TRUCK_MEW
+	iftrue VermilionPortHollowEmptyScript
+	opentext
+	writetext VermilionPortHollowWaitingText
+	waitbutton
+	closetext
+	sjump VermilionPortMewBattleScript
+
+VermilionPortHollowEmptyScript:
 	opentext
 	writetext VermilionPortTruckEmptyText
 	waitbutton
 	closetext
 	end
 
-.End:
+VermilionPortTruckDoneScript:
 	closetext
+	end
+
+VermilionPortEndScript:
 	end
 
 VermilionPortTruckShiftMovement:
@@ -270,6 +284,12 @@ VermilionPortTruckRevealText:
 
 	para "Something has been"
 	line "sleeping here."
+	done
+
+VermilionPortHollowWaitingText:
+	text "It is still here."
+
+	para "It has not moved."
 	done
 
 VermilionPortTruckEmptyText:

@@ -5,7 +5,7 @@ project state; `VERSION` holds the current version number.
 
 ---
 
-## Current state — v0.1.2
+## Current state — v0.1.3
 
 **Pipeline is proven end to end.** Edit → commit → GitHub Actions build →
 download artifact → sideload into SameBoy on iOS. No local machine required.
@@ -15,8 +15,8 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 | RGBDS 1.0.1 + pokecrystal build | working, byte-identical vanilla verified |
 | GitHub Actions build + artifact upload | working |
 | Version stamping (`vX.Y.Z-<sha>`) | working |
-| Devwarp fast-start build | working; spawns on the dock with Strength + badge |
-| Mew under the crate, Vermilion Port | placed on walkable deck, needs playtest |
+| Devwarp fast-start build | working; no prompts at all, spawns on the dock |
+| Mew under the crate, Vermilion Port | **working, confirmed on device** |
 
 **Reference checksums**
 
@@ -31,12 +31,12 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 
 ### Blocking / next up
 
-- [ ] **Playtest the Mew encounter.** Devwarp grants the badge and Strength,
-      so it should be reachable within seconds of booting.
-- [ ] **Mew failsafe.** Currently a one-shot: no handling for fleeing, fainting,
-      or running out of Poké Balls. Sudowoodo's script (`maps/Route36.asm`) is
-      the model — it handles `DRAW` and re-encounters. Decide whether Mew should
-      be permanently missable or recoverable.
+- [x] ~~Playtest the Mew encounter.~~ Confirmed working on device.
+- [x] ~~Mew failsafe.~~ Mew is now recoverable: if the battle ends in a `DRAW`
+      (fled, fainted, out of Balls) the caught flag is not set, and examining
+      the hollow re-triggers the encounter.
+- [ ] **Playtest the failsafe.** Knock Mew out or flee, then re-examine the
+      hollow — it should say "It is still here" and battle again.
 
 ### Tooling
 
@@ -105,6 +105,11 @@ DEV, grants one Pokémon, and spawns at a configurable point. Tune it in
   the only real verification.
 - **Event flags** for this project are allocated from the unused block at the
   end of `constants/event_flags.asm` (46 remaining).
+- **Introducing a global label inside a script resets local (`.foo`) label
+  scope.** Splitting `VermilionPortTruckScript` broke every `.End` below the new
+  label. Use fully-qualified script names when a script has multiple entry points.
+- **`closetext` is only valid when text is actually open.** Branches taken after
+  a `closetext`, or after `startbattle`, must jump to a plain `end`.
 - **Object placement must be checked against the `.blk` map.** Coordinates are
   tile-based; block `(x/2, y/2)` indexes into the `.blk`. Vermilion Port's
   walkable deck is block row 5 (tile rows 10–11). Placing an object on a

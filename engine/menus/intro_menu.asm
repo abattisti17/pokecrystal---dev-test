@@ -91,7 +91,12 @@ if DEF(_DEVWARP)
 ; and drops the player at the devwarp spawn (see data/maps/spawn_points.asm).
 ; Build with: make devwarp
 DevWarp_QuickStart:
-	farcall InitClock
+	; set the clock directly instead of showing the time-set prompt
+	ld a, DEVWARP_HOUR
+	ld [wStringBuffer2 + 1], a
+	ld a, DEVWARP_MINUTE
+	ld [wStringBuffer2 + 2], a
+	call InitTimeOfDay
 
 	; hardcode gender instead of showing the selection menu
 	ld a, DEVWARP_GENDER
