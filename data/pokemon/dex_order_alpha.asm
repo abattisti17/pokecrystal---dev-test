@@ -252,5 +252,6 @@ AlphabeticalPokedexOrder:
 	db XATU
 	db YANMA
 	db ZAPDOS
+	db GOROCHU
 	db ZUBAT
 	assert_table_length NUM_POKEMON

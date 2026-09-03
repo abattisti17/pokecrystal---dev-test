@@ -780,6 +780,11 @@ INCBIN "gfx/pokemon/unown_r/back.2bpp.lz"
 
 SECTION "Pics 20", ROMX
 
+; Lost Legends -- new species pics live here. Banks 1-19 are at capacity in
+; vanilla pokecrystal; 20-24 are empty and are where anything new should go.
+GorochuFrontpic:     INCBIN "gfx/pokemon/gorochu/front.animated.2bpp.lz"
+GorochuBackpic:      INCBIN "gfx/pokemon/gorochu/back.2bpp.lz"
+
 SECTION "Pics 21", ROMX
 
 SECTION "Pics 22", ROMX

@@ -5,7 +5,7 @@ project state; `VERSION` holds the current version number.
 
 ---
 
-## Current state — v0.1.3
+## Current state — v0.2.0
 
 **Pipeline is proven end to end.** Edit → commit → GitHub Actions build →
 download artifact → sideload into SameBoy on iOS. No local machine required.
@@ -17,6 +17,8 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 | Version stamping (`vX.Y.Z-<sha>`) | working |
 | Devwarp fast-start build | working; no prompts at all, spawns on the dock |
 | Mew under the crate, Vermilion Port | **working, confirmed on device** |
+| Headless smoke test (PyBoy) in CI | working, 5 checks |
+| Gorochu — species slot 252 | plumbing done; placeholder sprite |
 
 **Reference checksums**
 
@@ -38,13 +40,25 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 - [ ] **Playtest the failsafe.** Knock Mew out or flee, then re-examine the
       hollow — it should say "It is still here" and battle again.
 
-### Tooling
+### Gorochu
 
-- [ ] **mGBA smoke test in Actions.** The single highest-value addition.
-      Neither Claude nor Claude Code can catch runtime bugs from a clean
-      assembly — both v0.1.1 bugs compiled fine. A headless mGBA boot with
-      scripted inputs and a screenshot artifact would catch this whole class
-      of bug automatically.
+- [ ] **Front sprite.** Currently a recoloured Raichu placeholder. Only
+      Gorochu's *back* sprite ever surfaced publicly, so the front view is an
+      invention — this is an art-direction call. 56x56, 4 colours, indexed PNG.
+- [ ] **Back sprite.** Rosso wants the surfaced prototype back sprite. It must
+      be supplied as a file — the sandbox can only reach GitHub and package
+      registries, so it cannot be downloaded here. It will also need resizing:
+      the Gen 1 prototype sprite is 32x32, Gen 2 back sprites are 48x48.
+- [ ] **Evolution method.** Deliberately left undefined. `GorochuEvosAttacks`
+      has a learnset but no evolution trigger, and nothing evolves into it yet.
+- [ ] **Obtain location.** Not placed in the world yet.
+
+### Tooling
+- [ ] **ONE species slot remains — and it is now used.** Index `$fc` was the
+      only gap between Celebi (`$fb`) and EGG (`$fd`). Gorochu now occupies it.
+      **Every further new Pokémon requires displacing EGG or widening the
+      species index**, which touches save structures and is a much larger job.
+      This needs solving before the beta roster (8+ priority species) can land.
 - [ ] **Auto-create a GitHub Release on tag push.** Artifacts expire after 30
       days; releases are permanent. `git tag v0.2 && git push --tags` should
       produce a permanent download link.
@@ -110,6 +124,13 @@ DEV, grants one Pokémon, and spawns at a configurable point. Tune it in
   label. Use fully-qualified script names when a script has multiple entry points.
 - **`closetext` is only valid when text is actually open.** Branches taken after
   a `closetext`, or after `startbattle`, must jump to a plain `end`.
+- **Adding a species means ~15 parallel tables**, each with its own
+  `assert_table_length`. The fastest method is to add the constant first and
+  let rgbasm name each table that needs an entry. Watch where the assert sits:
+  several tables have placeholder rows *after* the `NUM_POKEMON` assert that
+  must be replaced rather than added to.
+- **Pic banks 1–19 are at capacity in vanilla pokecrystal.** New species pics
+  must go in `SECTION "Pics 20"` or later, which are empty.
 - **Object placement must be checked against the `.blk` map.** Coordinates are
   tile-based; block `(x/2, y/2)` indexes into the `.blk`. Vermilion Port's
   walkable deck is block row 5 (tile rows 10–11). Placing an object on a
