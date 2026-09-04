@@ -501,4 +501,10 @@ ENDM
 	map_const ROUTE_31_VIOLET_GATE,                         5,  4 ; 11
 	endgroup
 
-DEF NUM_MAP_GROUPS EQU const_value ; 26
+	newgroup TRANSFER_NETWORK                                     ; 27
+	map_const TRANSFER_NETWORK_ENTRY,                       4,  4 ;  1
+	map_const TRANSFER_NETWORK_BLOCKADE,                    4,  4 ;  2
+	map_const TRANSFER_NETWORK_DEEP_NODE,                   5,  5 ;  3
+	endgroup
+
+DEF NUM_MAP_GROUPS EQU const_value ; 27

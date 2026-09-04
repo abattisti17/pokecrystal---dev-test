@@ -1042,7 +1042,14 @@
 	const EVENT_BEAT_SAGE_GAKU
 	const EVENT_BEAT_SAGE_MASA
 	const EVENT_BEAT_SAGE_KOJI
-; Unused: next 116 events
+; Transfer Network events (The Transfer Network vignette; allocated from the unused block below)
+	const EVENT_TRANSFER_NETWORK_EXPLAINED
+	const EVENT_FOUGHT_PORYGON
+	const EVENT_TRANSFER_NETWORK_ITEM_ULTRA_BALL
+	const EVENT_TRANSFER_NETWORK_ITEM_REVIVE
+	const EVENT_TRANSFER_NETWORK_ITEM_ETHER
+	const EVENT_TRANSFER_NETWORK_TM_SWIFT
+; Unused: next 110 events
 
 	const_next 1600
 ; Sprite visibility flags

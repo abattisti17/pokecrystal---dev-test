@@ -10,6 +10,12 @@ This exists because a clean `make` proves nothing about runtime. Every bug
 found on device so far (garbage player name, wOTPartyCount corruption, an
 object placed over water) assembled without a single warning.
 
+DEVWARP_SPAWN currently points at the Transfer Network vignette (see
+constants/devwarp_constants.asm), so this test walks the network's three
+rooms end to end: Entry -> Blockade -> Deep Node -> the Porygon encounter.
+If DEVWARP_SPAWN is repointed at a different vignette, this test's route
+needs to move with it.
+
 Usage:
     python3 test/smoke_test.py pokecrystal_devwarp.gbc [--out artifacts/]
 """
@@ -37,9 +43,11 @@ ADDR = {
 
 CYNDAQUIL = 155
 GOROCHU = 252
-MEW = 151
+PORYGON = 137
 STRENGTH = 70
-VERMILION_PORT = (15, 2)  # (map group, map number)
+TRANSFER_NETWORK_ENTRY = (27, 1)  # (map group, map number)
+TRANSFER_NETWORK_BLOCKADE = (27, 2)
+TRANSFER_NETWORK_DEEP_NODE = (27, 3)
 
 # Gen 2 text encoding: 'A'-'Z' start at 0x80, terminator is 0x50
 def decode_name(raw):
@@ -54,6 +62,21 @@ def decode_name(raw):
         else:
             out.append("?")
     return "".join(out)
+
+
+def hold(pb, button, frames=24, settle=8):
+    pb.button_press(button)
+    for _ in range(frames):
+        pb.tick()
+    pb.button_release(button)
+    for _ in range(settle):
+        pb.tick()
+
+
+def tap(pb, button, gap=150, press=3):
+    pb.button(button, delay=press)
+    for _ in range(gap):
+        pb.tick()
 
 
 def run(rom_path, out_dir, frames_to_newgame=900):
@@ -92,17 +115,49 @@ def run(rom_path, out_dir, frames_to_newgame=900):
         print(f"screenshot skipped: {e}")
         shot = None
 
-    # Face the crate at Vermilion Port and mash through it: flavour text,
-    # "Use STRENGTH?" (defaults to YES), the reveal text, and into the wild
-    # Mew battle. This is a memory assertion that a wild battle can actually
-    # be entered, not just that the ROM boots to the overworld. Poll for
-    # wEnemyMonSpecies rather than mashing a fixed frame count: the exact
-    # number of frames to reach battle entry is timing-sensitive, and
-    # overshooting starts fighting (and eventually ending) the battle,
-    # which would mask a real regression here as a pass.
-    pb.button("right", delay=3)
-    for _ in range(30):
-        pb.tick()
+    # Walk the Transfer Network end to end: Entry's doorway to Blockade,
+    # Blockade's doorway deeper to the Deep Node, then up to the Porygon
+    # encounter itself. Every leg is the exact route confirmed by hand in
+    # PyBoy; see BRANCHES.md for the "Transfer Network" vignette writeup.
+    room_walk = (
+        ["down"] * 2 + ["left"] * 4 + ["up"] * 4 + ["right"] * 8 + ["left"]
+    )
+
+    # -- Entry: reach the doorway at (6,1) and go through to Blockade.
+    for d in room_walk:
+        hold(pb, d)
+    tap(pb, "up", gap=30)
+    tap(pb, "a", gap=150)
+    tap(pb, "a", gap=150)
+    hold(pb, "down", frames=5)
+
+    reached_blockade = (
+        mem[ADDR["wMapGroup"]],
+        mem[ADDR["wMapNumber"]],
+    ) == TRANSFER_NETWORK_BLOCKADE
+
+    # -- Blockade: same room shape (reused layout), reach its own doorway
+    # deeper at (6,1) and go through to the Deep Node.
+    for d in room_walk:
+        hold(pb, d)
+    tap(pb, "up", gap=30)
+    for _ in range(4):
+        tap(pb, "a", gap=150)
+    hold(pb, "down", frames=5)
+
+    reached_deep_node = (
+        mem[ADDR["wMapGroup"]],
+        mem[ADDR["wMapNumber"]],
+    ) == TRANSFER_NETWORK_DEEP_NODE
+
+    # -- Deep Node: walk up to the source and face it.
+    approach = [
+        "left", "up", "up", "up", "up", "up", "up", "up", "right", "up",
+    ]
+    for d in approach:
+        hold(pb, d)
+    hold(pb, "right")  # face the Porygon object
+
     enemy_species = 0
     battle_mode = 0
     for frame in range(3000):
@@ -111,7 +166,7 @@ def run(rom_path, out_dir, frames_to_newgame=900):
         pb.tick()
         enemy_species = mem[ADDR["wEnemyMonSpecies"]]
         battle_mode = mem[ADDR["wBattleMode"]]
-        if enemy_species == MEW and battle_mode != 0:
+        if enemy_species == PORYGON and battle_mode != 0:
             break
     print(f"enemy species: {enemy_species} (battle_mode={battle_mode})")
 
@@ -123,15 +178,19 @@ def run(rom_path, out_dir, frames_to_newgame=900):
     print(f"species     : {species}, {species2}")
     print(f"moves       : {moves}")
     print(f"screenshot  : {shot}")
+    print(f"reached Blockade  : {reached_blockade}")
+    print(f"reached Deep Node : {reached_deep_node}")
 
     checks = [
         ("player name is DEV", name == "DEV"),
-        ("spawned in Vermilion Port", (group, number) == VERMILION_PORT),
+        ("spawned in Transfer Network Entry", (group, number) == TRANSFER_NETWORK_ENTRY),
         ("two party members", party_count == 2),
         ("starter is Cyndaquil", species == CYNDAQUIL),
         ("slot 2 is Gorochu", species2 == GOROCHU),
         ("starter knows Strength", STRENGTH in moves),
-        ("wild battle entered (vs Mew)", battle_mode != 0 and enemy_species == MEW),
+        ("Blockade room reachable from Entry", reached_blockade),
+        ("Deep Node reachable from Blockade", reached_deep_node),
+        ("wild battle entered (vs Porygon)", battle_mode != 0 and enemy_species == PORYGON),
     ]
 
     print()
