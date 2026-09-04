@@ -19,7 +19,7 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 | Mew under the crate, Vermilion Port | **working, confirmed on device** (caught; v0.2.2 fixes the Ditto bug) |
 | Headless smoke test (PyBoy) in CI | working, 6 checks (adds a wild-battle-entry check) |
 | Gorochu — species slot 252 | plumbing done; placeholder sprite |
-| "Press B to catch" myth | code lands, builds clean; runtime effect **not** confirmed in headless testing — see note below |
+| "Press B to catch" myth | code lands, builds clean; joypad-mirror bug found and fixed; net catch-rate effect still wants on-device confirmation — see note below |
 
 **Reference checksums**
 
@@ -53,7 +53,7 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
       the Super Nerd) remain interactive right after the same battle. Not
       yet root-caused; needs on-device confirmation since PyBoy's object/
       script emulation could conceivably differ from real hardware here.
-- [x] ~~"Press B to catch" myth (v0.1 target, landed in v0.3.0).~~ Implemented
+- [ ] **"Press B to catch" myth (v0.1 target, landed in v0.3.0).** Implemented
       per spec in `engine/items/item_effects.asm` (`.skip_hp_calc`, right
       before the catch roll) and `constants/battle_constants.asm`
       (`LOST_LEGENDS_CATCH_BUTTON` = `PAD_B`, `LOST_LEGENDS_B_CATCH_BONUS` =
@@ -62,29 +62,41 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
       `make devwarp` both build clean, and the inserted bytes were verified
       by hand against the built ROM (correct opcodes at `PokeBallEffect`,
       correctly capped at `$ff` on carry).
-      **But: I could not confirm the bonus actually fires in headless
-      (PyBoy) testing**, and I don't think this is a testing artifact.
-      `wFinalCatchRate` (`$D1EA`) shares its address with
-      `wThrownBallWobbleCount` (see `engine/battle_anims/pokeball_wobble.asm`
-      line 11), which makes the byte read like it's being written multiple
-      times per throw — the *real* write is the first stable, reproducible
-      one. Holding B continuously (verified via PyBoy's true button-hold
-      API, not taps) through that write, in the cleanest apples-to-apples
-      test I could construct, produced the *same* `wFinalCatchRate` as not
-      holding it at all. Direct inspection of `hJoyDown` ($FFA8) during the
-      throw shows it frozen at its pre-throw value for the whole "DEV used
-      the POKÉ BALL!" sequence, only refreshing right around when the roll
-      executes — `wJoypadDisable` and `wGameLogicPaused` are both 0
-      throughout, so the freeze isn't the documented input-lock path. Best
-      guess, unconfirmed: the throw animation runs under a restricted
-      `hVBlank` handler (`VBlank_DMATransfer`/`VBlank_SoundOnly` — see
-      `home/vblank.asm`) that skips `UpdateJoypad`, and the catch-rate code
-      can win the race back to `VBlank_Normal` before the next real input
-      read lands. This is exactly the risk the original brief flagged
-      ("hJoyDown reflects held buttons at roll time... B is also the
-      text-advance/cancel button") — I just couldn't fully rule it out in
-      the time I had. **Needs on-device confirmation before calling this
-      done**, or a rework of where the button sample happens if it holds up.
+
+      **Correction to an earlier note in this file:** `wFinalCatchRate`
+      (`$D1EA`) and `wThrownBallWobbleCount` (`$D1EB`) are *adjacent* bytes
+      (see `ram/wram.asm`), not a shared address. `wFinalCatchRate` is not
+      overwritten by the wobble animation. The earlier claim here was wrong.
+
+      **Bug found and fixed: the code was reading the wrong joypad mirror.**
+      It read `hJoyDown` (`$FFA8`), which is only refreshed by an explicit
+      `GetJoypad` call — and nothing calls `GetJoypad` between `PrintText`
+      and the catch roll, so it was reading a stale value (confirmed: it
+      sits frozen at its pre-throw state through the whole "used the POKÉ
+      BALL!" sequence). Changed to `hJoypadDown` (`$FFA4`), which
+      `UpdateJoypad` writes unconditionally every VBlank — confirmed via
+      direct CPU-register inspection (PyBoy `hook_register`) that it tracks
+      real held-button state continuously, frame to frame, right up to the
+      roll.
+
+      **Real remaining risk, confirmed in testing: pressing B at the same
+      instant as confirming "USE" cancels back to the bag's item list**,
+      instead of throwing the ball. B doubles as the menu's cancel button,
+      and a *fresh* press-edge on it right at that confirmation reads as
+      "go back," not "held during the throw." Holding B continuously from
+      *before* opening the bag (so it's not a fresh edge at the confirm
+      moment) does not cancel — the throw proceeds normally. Net effect:
+      the myth works for a player who's already holding B as they open the
+      bag, not one who presses B and A at the same instant.
+
+      I was not able to get a fully clean, repeatable end-to-end
+      measurement of the catch-rate delta itself in headless testing —
+      `wFinalCatchRate` readings were inconsistent across otherwise-identical
+      runs once B was in the mix (I suspect my own test harness has timing
+      sensitivities I didn't fully pin down, not the game logic), so I'm not
+      marking this fully done. The joypad-mirror bug is real and fixed; the
+      cancel risk is real and documented; the net catch-rate effect still
+      wants on-device confirmation.
 
 ### Gorochu
 
@@ -203,12 +215,16 @@ DEV, grants one Pokémon, and spawns at a configurable point. Tune it in
   decorative pier-face block puts it visibly out over the water.
 - Upstream pokecrystal has moved to RGBDS 1.0.3; the workflow pins 1.0.1, which
   still builds correctly.
-- **`wFinalCatchRate` and `wThrownBallWobbleCount` are the same WRAM byte**
-  (`$D1EA`, see `ram/wram.asm` and `engine/battle_anims/pokeball_wobble.asm`).
-  It holds the catch rate only briefly, right after the roll, before the
-  wobble animation starts reusing it as a countdown. Anything that reads it
-  for debugging needs to catch that first write, not just poll for "nonzero."
-- **`hJoyDown` is not reliably live during an automatic (non-`waitbutton`)
-  battle message**, at least in headless PyBoy testing — see the "Press B to
-  catch" entry above. Don't assume a `ldh a, [hJoyDown]` mid-message reflects
-  the current physical input; it may be several hundred frames stale.
+- **`hJoyDown` ($FFA8) only updates when something explicitly calls
+  `GetJoypad`.** It is not a live per-frame mirror — `hJoypadDown` ($FFA4)
+  is, written unconditionally every VBlank by `UpdateJoypad`. Reading
+  `hJoyDown` from code that runs between `PrintText` calls (no
+  `GetJoypad` in between) reads a stale value. Bit us on the "Press B to
+  catch" myth; see that entry above. Prefer `hJoypadDown` for anything that
+  needs the actual current input outside the normal overworld/menu input
+  loop.
+- **The catch roll fires the instant "USE" is confirmed**, before the "used
+  the POKÉ BALL!" text or the throw animation play — not after them.
+  A fresh press of B at that exact confirm doubles as the bag menu's cancel
+  button, backing out instead of throwing. B already held from before
+  opening the bag does not have this problem.

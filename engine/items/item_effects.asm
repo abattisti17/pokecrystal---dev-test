@@ -373,7 +373,7 @@ PokeBallEffect:
 	; Lost Legends: the playground myth, made slightly true.
 	; Holding B as the ball is thrown nudges the catch rate.
 	push af
-	ldh a, [hJoyDown]
+	ldh a, [hJoypadDown]
 	and LOST_LEGENDS_CATCH_BUTTON
 	cp LOST_LEGENDS_CATCH_BUTTON
 	jr nz, .no_b_bonus
