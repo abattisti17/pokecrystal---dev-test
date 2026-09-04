@@ -2046,13 +2046,19 @@ MewtwoEvosAttacks:
 	db 0 ; no more level-up moves
 
 MewEvosAttacks:
+; Lost Legends: TRANSFORM and METRONOME removed.
+; Catching a Transformed Pokemon always yields a Ditto -- a vanilla bug (see
+; docs/bugs_and_glitches.md) that assumes only Ditto can ever be transformed.
+; Mew is the exception, and is unobtainable in vanilla, so the case never came
+; up. METRONOME goes too because TRANSFORM is not in MetronomeExcepts, so a
+; Metronome roll could still call it.
 	db 0 ; no more evolutions
 	db 1, POUND
-	db 10, TRANSFORM
+	db 10, BARRIER
 	db 20, MEGA_PUNCH
-	db 30, METRONOME
-	db 40, PSYCHIC_M
-	db 50, ANCIENTPOWER
+	db 30, PSYCHIC_M
+	db 40, ANCIENTPOWER
+	db 50, AMNESIA
 	db 0 ; no more level-up moves
 
 ChikoritaEvosAttacks:

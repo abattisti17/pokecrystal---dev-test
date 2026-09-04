@@ -16,7 +16,7 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 | GitHub Actions build + artifact upload | working |
 | Version stamping (`vX.Y.Z-<sha>`) | working |
 | Devwarp fast-start build | working; no prompts at all, spawns on the dock |
-| Mew under the crate, Vermilion Port | **working, confirmed on device** |
+| Mew under the crate, Vermilion Port | **working, confirmed on device** (caught; v0.2.2 fixes the Ditto bug) |
 | Headless smoke test (PyBoy) in CI | working, 5 checks |
 | Gorochu — species slot 252 | plumbing done; placeholder sprite |
 
@@ -137,6 +137,15 @@ DEV, grants one Pokémon, and spawns at a configurable point. Tune it in
   must be replaced rather than added to.
 - **Pic banks 1–19 are at capacity in vanilla pokecrystal.** New species pics
   must go in `SECTION "Pics 20"` or later, which are empty.
+- **Catching a Transformed Pokemon always yields a Ditto.** This is a *vanilla*
+  Crystal bug, flagged in `engine/items/item_effects.asm` and documented in
+  `docs/bugs_and_glitches.md`. The catch code assumes only Ditto can ever be
+  transformed, since Ditto is the only Pokemon that learns Transform in normal
+  play. Mew is the exception and is unobtainable in vanilla, so it never came
+  up. **Any future catchable Pokemon with Transform will hit this**, and
+  METRONOME can reach TRANSFORM because it is not in `MetronomeExcepts`.
+  Fixed here by removing both moves from Mew rather than patching the shared
+  catch path, which would affect every capture in the game.
 - **Object placement must be checked against the `.blk` map.** Coordinates are
   tile-based; block `(x/2, y/2)` indexes into the `.blk`. Vermilion Port's
   walkable deck is block row 5 (tile rows 10–11). Placing an object on a
