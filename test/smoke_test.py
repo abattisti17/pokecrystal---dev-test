@@ -31,10 +31,13 @@ ADDR = {
     "wPartyCount": 0xDCD7,
     "wPartySpecies": 0xDCD8,
     "wPartyMon1Moves": 0xDCE1,
+    "wEnemyMonSpecies": 0xD206,
+    "wBattleMode": 0xD22D,
 }
 
 CYNDAQUIL = 155
 GOROCHU = 252
+MEW = 151
 STRENGTH = 70
 VERMILION_PORT = (15, 2)  # (map group, map number)
 
@@ -88,6 +91,30 @@ def run(rom_path, out_dir, frames_to_newgame=900):
     except Exception as e:  # screenshot is a nice-to-have; never fail the checks over it
         print(f"screenshot skipped: {e}")
         shot = None
+
+    # Face the crate at Vermilion Port and mash through it: flavour text,
+    # "Use STRENGTH?" (defaults to YES), the reveal text, and into the wild
+    # Mew battle. This is a memory assertion that a wild battle can actually
+    # be entered, not just that the ROM boots to the overworld. Poll for
+    # wEnemyMonSpecies rather than mashing a fixed frame count: the exact
+    # number of frames to reach battle entry is timing-sensitive, and
+    # overshooting starts fighting (and eventually ending) the battle,
+    # which would mask a real regression here as a pass.
+    pb.button("right", delay=3)
+    for _ in range(30):
+        pb.tick()
+    enemy_species = 0
+    battle_mode = 0
+    for frame in range(3000):
+        if frame % 15 == 0:
+            pb.button("a", delay=3)
+        pb.tick()
+        enemy_species = mem[ADDR["wEnemyMonSpecies"]]
+        battle_mode = mem[ADDR["wBattleMode"]]
+        if enemy_species == MEW and battle_mode != 0:
+            break
+    print(f"enemy species: {enemy_species} (battle_mode={battle_mode})")
+
     pb.stop()
 
     print(f"player name : {name!r}")
@@ -104,6 +131,7 @@ def run(rom_path, out_dir, frames_to_newgame=900):
         ("starter is Cyndaquil", species == CYNDAQUIL),
         ("slot 2 is Gorochu", species2 == GOROCHU),
         ("starter knows Strength", STRENGTH in moves),
+        ("wild battle entered (vs Mew)", battle_mode != 0 and enemy_species == MEW),
     ]
 
     print()
