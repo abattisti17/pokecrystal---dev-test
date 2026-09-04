@@ -53,6 +53,11 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
       has a learnset but no evolution trigger, and nothing evolves into it yet.
 - [ ] **Obtain location.** Not placed in the world yet.
 
+### Devwarp
+
+- [x] Testing loadout: 999,999 money, 99x Ultra Ball, 99x Potion, Bicycle.
+      Granted on every devwarp new game. Tune in `constants/devwarp_constants.asm`.
+
 ### Tooling
 - [ ] **ONE species slot remains — and it is now used.** Index `$fc` was the
       only gap between Celebi (`$fb`) and EGG (`$fd`). Gorochu now occupies it.

@@ -146,6 +146,41 @@ DevWarp_QuickStart:
 	ld de, ENGINE_PLAINBADGE
 	ld b, SET_FLAG
 	farcall EngineFlagAction
+
+	; money, for testing marts/prizes/etc without grinding
+	; wMoney is 3 plain bytes, big-endian (see NewGame's START_MONEY write
+	; just above in this same file) -- NOT packed BCD.
+	ld a, HIGH(DEVWARP_MONEY >> 8)
+	ld [wMoney], a
+	ld a, HIGH(DEVWARP_MONEY)
+	ld [wMoney + 1], a
+	ld a, LOW(DEVWARP_MONEY)
+	ld [wMoney + 2], a
+
+	; item pockets, so ball/catch/battle testing doesn't need a mart trip.
+	; ReceiveItem reads the item from wCurItem, NOT from de -- de is only
+	; used internally for the general-pocket dispatch and is otherwise dead
+	; weight. hl selects which pocket's count byte to write.
+	ld a, DEVWARP_ITEM_1
+	ld [wCurItem], a
+	ld a, DEVWARP_ITEM_1_QTY
+	ld [wItemQuantityChange], a
+	ld hl, wNumItems
+	call ReceiveItem
+
+	ld a, DEVWARP_ITEM_2
+	ld [wCurItem], a
+	ld a, DEVWARP_ITEM_2_QTY
+	ld [wItemQuantityChange], a
+	ld hl, wNumItems
+	call ReceiveItem
+
+	ld a, DEVWARP_KEY_ITEM
+	ld [wCurItem], a
+	ld a, 1
+	ld [wItemQuantityChange], a
+	ld hl, wNumKeyItems
+	call ReceiveItem
 	ret
 
 .DevName:

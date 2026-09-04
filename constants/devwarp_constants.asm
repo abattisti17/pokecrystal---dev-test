@@ -10,3 +10,11 @@ DEF DEVWARP_LEVEL_2    EQU 50         ; its level
 DEF DEVWARP_GENDER     EQU 0          ; 0 = male, 1 = female
 DEF DEVWARP_HOUR       EQU 12         ; clock hour (0-23); 12 = daytime
 DEF DEVWARP_MINUTE     EQU 0          ; clock minute (0-59)
+
+; Testing loadout -- granted on every devwarp new game.
+DEF DEVWARP_MONEY        EQU 999999   ; max wallet
+DEF DEVWARP_ITEM_1       EQU ULTRA_BALL
+DEF DEVWARP_ITEM_1_QTY   EQU 99
+DEF DEVWARP_ITEM_2       EQU POTION
+DEF DEVWARP_ITEM_2_QTY   EQU 99
+DEF DEVWARP_KEY_ITEM     EQU BICYCLE  ; goes in the key items pocket
