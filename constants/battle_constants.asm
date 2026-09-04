@@ -271,3 +271,11 @@ DEF BATTLERESULT_BITMASK EQU (1 << BATTLERESULT_CAUGHT_CELEBI) | (1 << BATTLERES
 ; link_battle_record struct
 DEF LINK_BATTLE_RECORD_LENGTH EQU 2 + (NAME_LENGTH - 1) + 2 * 3
 DEF NUM_LINK_BATTLE_RECORDS EQU 5
+
+; Lost Legends -- "press B to catch" myth
+; Held-button mask sampled at the moment of the catch roll.
+; Set to PAD_B | PAD_DOWN for the Down+B variant of the rumor.
+DEF LOST_LEGENDS_CATCH_BUTTON   EQU PAD_B
+; Flat bonus added to the final catch rate (0-255 scale). Keep this SMALL --
+; the myth should be barely perceptible, never reliable.
+DEF LOST_LEGENDS_B_CATCH_BONUS  EQU 13   ; ~5%

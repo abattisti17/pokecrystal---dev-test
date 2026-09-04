@@ -486,3 +486,10 @@ INCLUDE "maps/SilverCaveOutside.asm"
 INCLUDE "maps/Route10North.asm"
 
 ENDSECTION
+
+
+SECTION "Map Scripts 26", ROMX
+
+INCLUDE "maps/TransferNetworkEntry.asm"
+INCLUDE "maps/TransferNetworkBlockade.asm"
+INCLUDE "maps/TransferNetworkDeepNode.asm"

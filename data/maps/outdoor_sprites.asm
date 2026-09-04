@@ -30,6 +30,7 @@ OutdoorSprites:
 	dw NewBarkGroupSprites
 	dw SaffronGroupSprites
 	dw CherrygroveGroupSprites
+	dw DungeonsGroupSprites ; 27 (Transfer Network -- all-indoor group, never consulted)
 	assert_table_length NUM_MAP_GROUPS
 
 PalletGroupSprites:

@@ -714,3 +714,6 @@ ENDM
 	map_attributes Route30BerryHouse, ROUTE_30_BERRY_HOUSE, $00
 	map_attributes MrPokemonsHouse, MR_POKEMONS_HOUSE, $00
 	map_attributes Route31VioletGate, ROUTE_31_VIOLET_GATE, $00
+	map_attributes TransferNetworkEntry, TRANSFER_NETWORK_ENTRY, $00
+	map_attributes TransferNetworkBlockade, TRANSFER_NETWORK_BLOCKADE, $00
+	map_attributes TransferNetworkDeepNode, TRANSFER_NETWORK_DEEP_NODE, $00
