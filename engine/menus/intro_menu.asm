@@ -75,7 +75,7 @@ endc
 	ld [wPrevLandmark], a
 
 if DEF(_DEVWARP)
-	ld a, SPAWN_VERMILION
+	ld a, DEVWARP_SPAWN
 else
 	ld a, SPAWN_HOME
 endc

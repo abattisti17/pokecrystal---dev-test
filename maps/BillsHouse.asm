@@ -1,10 +1,112 @@
 	object_const_def
 	const BILLSHOUSE_GRAMPS
+	const BILLSHOUSE_BILL
 
 BillsHouse_MapScripts:
 	def_scene_scripts
 
 	def_callbacks
+
+BillTransferNetworkScript:
+	faceplayer
+	opentext
+	checkevent EVENT_FOUGHT_PORYGON
+	iftrue .Cleared
+	checkevent EVENT_TRANSFER_NETWORK_EXPLAINED
+	iftrue .AlreadyExplained
+	writetext BillIntroText
+	promptbutton
+	writetext BillExplainText
+	promptbutton
+	writetext BillAskText
+	yesorno
+	iffalse .Declined
+	setevent EVENT_TRANSFER_NETWORK_EXPLAINED
+	sjump .SendIn
+
+.AlreadyExplained:
+	writetext BillAskAgainText
+	yesorno
+	iffalse .Declined
+	sjump .SendIn
+
+.SendIn:
+	writetext BillSendingText
+	waitbutton
+	closetext
+	warp TRANSFER_NETWORK_ENTRY, 4, 5
+	end
+
+.Declined:
+	writetext BillDeclinedText
+	waitbutton
+	closetext
+	end
+
+.Cleared:
+	writetext BillClearedText
+	waitbutton
+	closetext
+	end
+
+BillIntroText:
+	text "Oh -- hello."
+
+	para "I'm using GRAMPS'S"
+	line "PC to check some-"
+	cont "thing."
+	done
+
+BillExplainText:
+	text "#MON go into"
+	line "storage."
+
+	para "Some don't come"
+	line "back out."
+
+	para "Not released. Not"
+	line "anywhere. Just"
+	cont "gone."
+	done
+
+BillAskText:
+	text "I can send you in"
+	line "after them."
+
+	para "It should be safe."
+	line "Will you go?"
+	done
+
+BillAskAgainText:
+	text "Still nothing on"
+	line "my end."
+
+	para "Want to go back"
+	line "in?"
+	done
+
+BillSendingText:
+	text "Hold on."
+
+	para "Sending you"
+	line "through now."
+	done
+
+BillDeclinedText:
+	text "All right."
+
+	para "Come back if you"
+	line "change your mind."
+	done
+
+BillClearedText:
+	text "Whatever was jam-"
+	line "ming the line is"
+	cont "gone."
+
+	para "Thank you. I mean"
+	line "that."
+	done
 
 BillsGrandpa:
 	faceplayer
@@ -364,3 +466,4 @@ BillsHouse_MapEvents:
 
 	def_object_events
 	object_event  2,  3, SPRITE_GRAMPS, SPRITEMOVEDATA_STANDING_UP, 0, 2, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, BillsGrandpa, -1
+	object_event  5,  3, SPRITE_BILL, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, BillTransferNetworkScript, -1

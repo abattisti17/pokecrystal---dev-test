@@ -2,6 +2,14 @@
 ; Only used when building with `make devwarp`. Has no effect on release builds.
 ; Change these to test a different scene without replaying the intro.
 
+; Which SPAWN_* the fast-start lands you at (see data/maps/spawn_points.asm).
+; Vermilion Port is the trunk default (Mew under the crate). Vignette
+; branches typically point this at their own entry point while in progress
+; -- e.g. SPAWN_TRANSFER_NETWORK_ENTRY for the Transfer Network vignette --
+; and are expected to restore SPAWN_VERMILION before merging to master,
+; unless a coordinated merge decides otherwise (see BRANCHES.md).
+DEF DEVWARP_SPAWN      EQU SPAWN_TRANSFER_NETWORK_ENTRY
+
 DEF DEVWARP_SPECIES    EQU CYNDAQUIL  ; the Pokemon you start with
 DEF DEVWARP_LEVEL      EQU 25         ; its level
 DEF DEVWARP_FIELD_MOVE EQU STRENGTH   ; written into its 4th move slot

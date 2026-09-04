@@ -16,10 +16,20 @@ These are global. Two branches editing the same one will conflict.
 |---|---|---|---|
 | Species slots | 253 max | 252 (Gorochu) | **1** |
 | Pic banks | `Pics 20`–`Pics 24` | 20 (Gorochu) | 21, 22, 23, 24 |
-| Spawn points | fixed `SPAWN_*` list | devwarp override | — |
+| Map groups | append-only, `NUM_MAP_GROUPS` | 27, `TRANSFER_NETWORK` (Porygon) | 28+ |
+| Spawn points | fixed `SPAWN_*` list | `SPAWN_TRANSFER_NETWORK_ENTRY` added | more can be appended |
+| `DEVWARP_SPAWN` (current value) | one at a time | Transfer Network's entry | next branch: repoint or coordinate |
 | Save structure | — | — | changes break old saves |
 
-Free ROM space: ~401 KB. Free event flags: ~668. Neither is a near-term concern.
+Map groups are append-only and safe to add (see `constants/map_constants.asm`'s
+`newgroup`/`endgroup` pattern) — claim a name here so two branches don't both
+grab "the next number." `DEVWARP_SPAWN` is a single global default in
+`constants/devwarp_constants.asm`; only one branch's content is reachable via
+`make devwarp` at a time. Whoever builds the next branch should either repoint
+it at their own entry (bumping trunk's default back to `SPAWN_VERMILION` on
+merge, per the working agreements) or coordinate here first.
+
+Free ROM space: ~401 KB. Free event flags: ~662. Neither is a near-term concern.
 
 ## Event flag allocation
 
@@ -31,7 +41,7 @@ renumbering churn on merge.
 | after `EVENT_BATTLE_TOWER_OPEN_CIVILIANS` | 44 remaining | trunk / Mew (2 used) |
 | "next 339 events" block | 339 | **A Mother's Promise**, then Maiden's Real Name |
 | "next 167 events" block | 167 | **Data Ghost** (MissingNo.) |
-| "next 116 events" block | 116 | **The Last Broadcast** (Porygon) |
+| "next 116 events" block | 116 (110 free) | **The Transfer Network** (Porygon, 6 used) |
 
 Unassigned branches: claim a sub-range here before starting.
 
@@ -65,12 +75,39 @@ Ordered by recommended build order — cheapest and least contested first.
   glitch effects to reproduce (sprite corruption, Hall of Fame damage) versus
   merely reference.
 
-### 4. The Last Broadcast — Porygon
-- **Location:** Goldenrod Radio Tower basement
-- **Species:** none (Porygon exists)
-- **Conflict risk:** low
-- **Note:** handle the seizure origin with care. The in-game event is a
-  broadcast causing Pokémon illness — no flashing effects.
+### 4. The Transfer Network — Porygon — ✅ done (v0.4.0)
+- **Location:** new map group `TRANSFER_NETWORK` (27), entered from Bill's
+  House (`maps/BillsHouse.asm`) — not Goldenrod Radio Tower as originally
+  scoped here. Reframed around the PC transfer system (Bill's own domain in
+  Gen 2) rather than a broadcast; same source myth (anime EP038), different
+  in-world mechanism. Three rooms: `TransferNetworkEntry`,
+  `TransferNetworkBlockade`, `TransferNetworkDeepNode` — all reuse existing
+  map layouts and tilesets (`RuinsOfAlphResearchCenter`'s and
+  `DragonShrine`'s block data, aliased in `data/maps/blocks.asm`), no new
+  tile art.
+- **Species:** none (Porygon exists, species 137) — removed from
+  `SometimesFleeMons` in `data/wild/flee_mons.asm` so the quest reward can't
+  just run off; see the comment there.
+- **Event flags:** 6 used from the "next 116" block (`EVENT_TRANSFER_NETWORK_*`,
+  `EVENT_FOUGHT_PORYGON`), 110 left in that block.
+- **Conflict risk:** low. Touches `maps/BillsHouse.asm` (added Bill as an
+  NPC there — his grandfather's dialogue already establishes Bill is
+  reachable by PC from Johto, so this doesn't contradict anything) and the
+  shared per-map-group tables (`data/maps/maps.asm`, `attributes.asm`,
+  `blocks.asm`, `scripts.asm`, `roofs.asm`, `outdoor_sprites.asm`,
+  `sgb_roof_pal_inds.asm`, `roofs.pal`) for the new group — all append-only.
+- **DEVWARP_SPAWN** currently points here (`SPAWN_TRANSFER_NETWORK_ENTRY`).
+  Repoint to `SPAWN_VERMILION` (or the next branch's own entry) before/at
+  merge — see the resource table above.
+- **Gotcha for future branches reusing a map's block data:** the tile
+  *layout* being walkable isn't enough for a `warp_event` (walk-onto-tile
+  warp) to fire — the underlying tile also needs warp-type collision
+  (`CheckWarpCollision` in `engine/overworld/tile_events.asm`), which only
+  exists where the *source* map had a real door. A reused layout only has
+  warp-collision at that original door. Anywhere else you want to leave
+  from, use an `OBJECTTYPE_SCRIPT` object with a script-level `warp <map>,
+  x, y` command instead (no collision-type requirement). This cost real
+  time to find — don't rediscover it.
 
 ### 5. The Soldier's War — Lt. Surge
 - **Location:** Cerulean Cave entrance, veteran NPCs across the map

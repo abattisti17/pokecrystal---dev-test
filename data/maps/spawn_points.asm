@@ -42,6 +42,7 @@ endc
 	spawn BLACKTHORN_CITY,            21, 30
 	spawn SILVER_CAVE_OUTSIDE,        23, 20
 	spawn FAST_SHIP_CABINS_SW_SSW_NW,  6,  2
+	spawn TRANSFER_NETWORK_ENTRY,      4,  5
 
 	spawn N_A,                        -1, -1
 
