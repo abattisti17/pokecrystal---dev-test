@@ -5,7 +5,7 @@ project state; `VERSION` holds the current version number.
 
 ---
 
-## Current state — v0.2.0
+## Current state — v0.3.0
 
 **Pipeline is proven end to end.** Edit → commit → GitHub Actions build →
 download artifact → sideload into SameBoy on iOS. No local machine required.
@@ -17,8 +17,9 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 | Version stamping (`vX.Y.Z-<sha>`) | working |
 | Devwarp fast-start build | working; no prompts at all, spawns on the dock |
 | Mew under the crate, Vermilion Port | **working, confirmed on device** (caught; v0.2.2 fixes the Ditto bug) |
-| Headless smoke test (PyBoy) in CI | working, 5 checks |
+| Headless smoke test (PyBoy) in CI | working, 6 checks (adds a wild-battle-entry check) |
 | Gorochu — species slot 252 | plumbing done; placeholder sprite |
+| "Press B to catch" myth | code lands, builds clean; runtime effect **not** confirmed in headless testing — see note below |
 
 **Reference checksums**
 
@@ -52,6 +53,38 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
       the Super Nerd) remain interactive right after the same battle. Not
       yet root-caused; needs on-device confirmation since PyBoy's object/
       script emulation could conceivably differ from real hardware here.
+- [x] ~~"Press B to catch" myth (v0.1 target, landed in v0.3.0).~~ Implemented
+      per spec in `engine/items/item_effects.asm` (`.skip_hp_calc`, right
+      before the catch roll) and `constants/battle_constants.asm`
+      (`LOST_LEGENDS_CATCH_BUTTON` = `PAD_B`, `LOST_LEGENDS_B_CATCH_BONUS` =
+      13, both tunable there). Master Ball and the tutorial battle still
+      bypass it via `.catch_without_fail`, confirmed unchanged. `make` and
+      `make devwarp` both build clean, and the inserted bytes were verified
+      by hand against the built ROM (correct opcodes at `PokeBallEffect`,
+      correctly capped at `$ff` on carry).
+      **But: I could not confirm the bonus actually fires in headless
+      (PyBoy) testing**, and I don't think this is a testing artifact.
+      `wFinalCatchRate` (`$D1EA`) shares its address with
+      `wThrownBallWobbleCount` (see `engine/battle_anims/pokeball_wobble.asm`
+      line 11), which makes the byte read like it's being written multiple
+      times per throw — the *real* write is the first stable, reproducible
+      one. Holding B continuously (verified via PyBoy's true button-hold
+      API, not taps) through that write, in the cleanest apples-to-apples
+      test I could construct, produced the *same* `wFinalCatchRate` as not
+      holding it at all. Direct inspection of `hJoyDown` ($FFA8) during the
+      throw shows it frozen at its pre-throw value for the whole "DEV used
+      the POKÉ BALL!" sequence, only refreshing right around when the roll
+      executes — `wJoypadDisable` and `wGameLogicPaused` are both 0
+      throughout, so the freeze isn't the documented input-lock path. Best
+      guess, unconfirmed: the throw animation runs under a restricted
+      `hVBlank` handler (`VBlank_DMATransfer`/`VBlank_SoundOnly` — see
+      `home/vblank.asm`) that skips `UpdateJoypad`, and the catch-rate code
+      can win the race back to `VBlank_Normal` before the next real input
+      read lands. This is exactly the risk the original brief flagged
+      ("hJoyDown reflects held buttons at roll time... B is also the
+      text-advance/cancel button") — I just couldn't fully rule it out in
+      the time I had. **Needs on-device confirmation before calling this
+      done**, or a rework of where the button sample happens if it holds up.
 
 ### Gorochu
 
@@ -109,8 +142,8 @@ starting a branch.
 
 ## Version roadmap
 
-- **v0.1** — Mew under the truck/crate ✅, Press B catch rate boost, one beta
-  Pokémon (Kotora)
+- **v0.1** — Mew under the truck/crate ✅, ~~Press B catch rate boost~~ (landed
+  in v0.3.0 instead, see Open items), one beta Pokémon (Kotora)
 - **v0.2** — 2 new map areas, Marowak ghost quest, ASH rival with 2 battles
 - **v0.3** — All 8 priority beta Pokémon with sprites + Pokédex entries
 - **v0.4** — Anime arcs (Porygon, Sabrina, Bill, Lt. Surge lore)
@@ -170,3 +203,12 @@ DEV, grants one Pokémon, and spawns at a configurable point. Tune it in
   decorative pier-face block puts it visibly out over the water.
 - Upstream pokecrystal has moved to RGBDS 1.0.3; the workflow pins 1.0.1, which
   still builds correctly.
+- **`wFinalCatchRate` and `wThrownBallWobbleCount` are the same WRAM byte**
+  (`$D1EA`, see `ram/wram.asm` and `engine/battle_anims/pokeball_wobble.asm`).
+  It holds the catch rate only briefly, right after the roll, before the
+  wobble animation starts reusing it as a countdown. Anything that reads it
+  for debugging needs to catch that first write, not just poll for "nonzero."
+- **`hJoyDown` is not reliably live during an automatic (non-`waitbutton`)
+  battle message**, at least in headless PyBoy testing — see the "Press B to
+  catch" entry above. Don't assume a `ldh a, [hJoyDown]` mid-message reflects
+  the current physical input; it may be several hundred frames stale.

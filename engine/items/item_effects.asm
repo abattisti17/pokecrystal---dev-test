@@ -370,6 +370,21 @@ PokeBallEffect:
 .max_2
 
 .skip_hp_calc
+	; Lost Legends: the playground myth, made slightly true.
+	; Holding B as the ball is thrown nudges the catch rate.
+	push af
+	ldh a, [hJoyDown]
+	and LOST_LEGENDS_CATCH_BUTTON
+	cp LOST_LEGENDS_CATCH_BUTTON
+	jr nz, .no_b_bonus
+	pop af
+	add LOST_LEGENDS_B_CATCH_BONUS
+	jr nc, .b_bonus_done
+	ld a, $ff ; cap, don't wrap
+	jr .b_bonus_done
+.no_b_bonus
+	pop af
+.b_bonus_done
 	ld b, a
 	ld [wFinalCatchRate], a
 	call Random
