@@ -151,6 +151,49 @@ DevWarp_QuickStart:
 	farcall SetGiftPartyMonCaughtData
 .skip_second
 
+	; slot 3 -- the catcher
+	xor a ; PARTYMON
+	ld [wMonType], a
+	ld a, DEVWARP_SPECIES_3
+	ld [wCurPartySpecies], a
+	ld a, DEVWARP_LEVEL_3
+	ld [wCurPartyLevel], a
+	predef TryAddMonToParty
+	jr nc, .skip_third
+	ld b, CAUGHT_BY_UNKNOWN
+	farcall SetGiftPartyMonCaughtData
+	ld a, DEVWARP_S3_MOVE_1
+	ld [wPartyMon3Moves + 0], a
+	ld a, DEVWARP_S3_MOVE_2
+	ld [wPartyMon3Moves + 1], a
+	ld a, DEVWARP_S3_MOVE_3
+	ld [wPartyMon3Moves + 2], a
+	ld a, DEVWARP_S3_MOVE_4
+	ld [wPartyMon3Moves + 3], a
+	ld a, 15
+	ld [wPartyMon3PP + 0], a
+	ld [wPartyMon3PP + 1], a
+	ld [wPartyMon3PP + 2], a
+	ld [wPartyMon3PP + 3], a
+.skip_third
+
+	; slot 4 -- the taxi
+	xor a ; PARTYMON
+	ld [wMonType], a
+	ld a, DEVWARP_SPECIES_4
+	ld [wCurPartySpecies], a
+	ld a, DEVWARP_LEVEL_4
+	ld [wCurPartyLevel], a
+	predef TryAddMonToParty
+	jr nc, .skip_fourth
+	ld b, CAUGHT_BY_UNKNOWN
+	farcall SetGiftPartyMonCaughtData
+	ld a, DEVWARP_S4_MOVE_1
+	ld [wPartyMon4Moves + 0], a
+	ld a, 15
+	ld [wPartyMon4PP + 0], a
+.skip_fourth
+
 	; grant the badge that gates Strength
 	ld de, ENGINE_PLAINBADGE
 	ld b, SET_FLAG

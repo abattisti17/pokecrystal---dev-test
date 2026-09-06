@@ -111,6 +111,8 @@ def check_core(pb):
     party_count = m[ADDR["wPartyCount"]]
     species = m[ADDR["wPartySpecies"]]
     species2 = m[ADDR["wPartySpecies"] + 1]
+    species3 = m[ADDR["wPartySpecies"] + 2]
+    species4 = m[ADDR["wPartySpecies"] + 3]
     moves = [m[ADDR["wPartyMon1Moves"] + i] for i in range(4)]
     money = (m[ADDR["wMoney"]] << 16) | (m[ADDR["wMoney"] + 1] << 8) | m[ADDR["wMoney"] + 2]
     ball_id = m[ADDR["wNumBalls"] + 1]
@@ -122,9 +124,11 @@ def check_core(pb):
 
     return [
         ("player name is DEV", name == "DEV"),
-        ("two party members", party_count == 2),
+        ("four party members", party_count == 4),
         ("starter is Cyndaquil", species == CYNDAQUIL),
         ("slot 2 is Gorochu", species2 == GOROCHU),
+        ("slot 3 is the Scyther catcher", species3 == 123),
+        ("slot 4 is the Pidgeot taxi", species4 == 18),
         ("starter moveset is Flamethrower/Smokescreen/Surf/Strength",
          moves == [FLAMETHROWER, SMOKESCREEN, SURF, STRENGTH]),
         ("testing money granted", money == 999999),
