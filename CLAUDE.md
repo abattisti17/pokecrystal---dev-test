@@ -15,14 +15,29 @@ Do not reconstruct project state by searching the repo. These two files are
 maintained for exactly that purpose. Update them in the same commit as the
 work they describe.
 
-## Build
+## Build and test
 
     make            # release ROM -> pokecrystal.gbc
     make devwarp    # fast-start test ROM (skips intro, testing loadout)
-    python3 test/smoke_test.py pokecrystal_devwarp.gbc --out artifacts
+
+    python3 test/smoke_test.py pokecrystal_devwarp.gbc --list
+    python3 test/smoke_test.py pokecrystal_devwarp.gbc --only core
+    python3 test/smoke_test.py pokecrystal_devwarp.gbc          # full suite
 
 A clean build proves nothing about runtime. Every bug found on device so far
-assembled without a single warning. Run the smoke test.
+assembled without a single warning. Run the tests.
+
+**Test selection convention:**
+- While iterating on a feature, run `--only <that feature>` to save time.
+- **Before pushing, run the full suite with no flags.**
+- CI always runs the full suite. Selection is a local speed-up, never the
+  safety net — feature isolation is weaker here than it looks, since
+  `intro_menu.asm` and the shared species tables are touched by almost
+  everything.
+- A `SKIP` is not a pass. It means the ROM's devwarp spawn didn't match what
+  that group needs, so the coverage did not run.
+- New feature: add a group to `GROUPS` in `test/smoke_test.py` rather than
+  bolting checks onto an existing one.
 
 ## Working agreements
 
