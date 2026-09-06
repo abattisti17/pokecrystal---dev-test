@@ -61,7 +61,13 @@ assembled without a single warning. Run the tests.
 
 ## Pitfalls that have cost real time
 
-- **Reachability is not just tile collision — NPCs block their tile.** A flood
+- **Reachability depends on THREE things, not one: tile collision, NPC
+  positions, AND `coord_event`s.** Vermilion Port's `coord_event 7, 11` is the
+  clearest case: that tile is the only link between the north deck and the
+  southern basin, and stepping on it force-boards you onto the ship. The
+  southern half of that map is therefore permanently unreachable on foot or by
+  Surf, no matter what the collision data says.
+- **NPCs block their tile.** A flood
   fill over `*_collision.asm` alone will report areas reachable that a player
   cannot actually get to. The Vermilion Port gangway sailor at (7,17) plugs the
   only route south single-handedly.
