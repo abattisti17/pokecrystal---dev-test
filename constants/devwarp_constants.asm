@@ -8,11 +8,12 @@
 ; -- e.g. SPAWN_TRANSFER_NETWORK_ENTRY for the Transfer Network vignette --
 ; and are expected to restore SPAWN_VERMILION before merging to master,
 ; unless a coordinated merge decides otherwise (see BRANCHES.md).
-DEF DEVWARP_SPAWN      EQU SPAWN_TRANSFER_NETWORK_ENTRY
+DEF DEVWARP_SPAWN      EQU SPAWN_VERMILION
 
 DEF DEVWARP_SPECIES    EQU CYNDAQUIL  ; the Pokemon you start with
 DEF DEVWARP_LEVEL      EQU 25         ; its level
-DEF DEVWARP_FIELD_MOVE EQU STRENGTH   ; written into its 4th move slot
+DEF DEVWARP_FIELD_MOVE   EQU STRENGTH ; written into move slot 4
+DEF DEVWARP_FIELD_MOVE_2 EQU SURF     ; written into move slot 3
 DEF DEVWARP_SPECIES_2  EQU GOROCHU    ; second party slot -- whatever is in progress
 DEF DEVWARP_LEVEL_2    EQU 50         ; its level
 DEF DEVWARP_GENDER     EQU 0          ; 0 = male, 1 = female

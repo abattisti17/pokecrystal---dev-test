@@ -128,6 +128,10 @@ DevWarp_QuickStart:
 	ld [wPartyMon1Moves + 3], a
 	ld a, 15
 	ld [wPartyMon1PP + 3], a
+	ld a, DEVWARP_FIELD_MOVE_2
+	ld [wPartyMon1Moves + 2], a
+	ld a, 15
+	ld [wPartyMon1PP + 2], a
 
 	; second party slot -- for trying out whatever is being worked on
 	xor a ; PARTYMON
@@ -144,6 +148,9 @@ DevWarp_QuickStart:
 
 	; grant the badge that gates Strength
 	ld de, ENGINE_PLAINBADGE
+	ld b, SET_FLAG
+	farcall EngineFlagAction
+	ld de, ENGINE_FOGBADGE ; gates SURF
 	ld b, SET_FLAG
 	farcall EngineFlagAction
 

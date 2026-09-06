@@ -51,9 +51,11 @@ ADDR = {
 CYNDAQUIL = 155
 GOROCHU = 252
 STRENGTH = 70
+SURF = 57
 ULTRA_BALL = 2
 
-VERMILION_PORT = (15, 2)  # (map group, map number)
+VERMILION_PORT = (15, 2)          # (map group, map number)
+TRANSFER_NETWORK_ENTRY = (27, 1)
 
 
 def decode_name(raw):
@@ -116,6 +118,7 @@ def check_core(pb):
         ("starter is Cyndaquil", species == CYNDAQUIL),
         ("slot 2 is Gorochu", species2 == GOROCHU),
         ("starter knows Strength", STRENGTH in moves),
+        ("starter knows Surf", SURF in moves),
         ("testing money granted", money == 999999),
         ("Ultra Balls in Balls pocket", ball_id == ULTRA_BALL and ball_qty == 99),
     ]
@@ -125,6 +128,14 @@ def check_mew(pb):
     """The Vermilion Port crate. Requires a Vermilion Port devwarp spawn."""
     return [
         ("spawned in Vermilion Port", current_spawn(pb) == VERMILION_PORT),
+    ]
+
+
+def check_network(pb):
+    """The Transfer Network. Requires a Transfer Network devwarp spawn."""
+    return [
+        ("spawned in Transfer Network Entry",
+         current_spawn(pb) == TRANSFER_NETWORK_ENTRY),
     ]
 
 
@@ -138,6 +149,11 @@ GROUPS = {
         "fn": check_mew,
         "desc": "Vermilion Port crate / Mew encounter",
         "requires_spawn": VERMILION_PORT,
+    },
+    "network": {
+        "fn": check_network,
+        "desc": "Transfer Network / Porygon vignette",
+        "requires_spawn": TRANSFER_NETWORK_ENTRY,
     },
 }
 

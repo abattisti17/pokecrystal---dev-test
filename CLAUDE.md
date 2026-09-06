@@ -97,6 +97,14 @@ assembled without a single warning. Run the tests.
   Use `hJoypadDown` for live input.
 - **`ReceiveItem` reads the item from `wCurItem`, not from `de`.** It routes
   to the correct pocket by the item's own attribute regardless of `hl`.
+- **The Gen 1 truck is a map block, not a sprite** — that is why it was never
+  interactive in Red/Blue. Ported here as `TILESET_PORT` block `$40` (tiles
+  96–103, lifted from pokered's `ship_port`). Interaction is a `bg_event`,
+  since a block cannot be an `object_event`.
+- **Adding tiles to a tileset means four files**: the `.png`, `_metatiles.bin`
+  (16 bytes per block), `_collision.asm` (one `tilecoll` per block), and
+  `_palette_map.asm` (one `tilepal` per 8 tiles). Miss one and it either
+  fails to assemble or renders with the wrong palette.
 - **Pic banks 1–19 are at capacity.** New sprites go in `SECTION "Pics 20"`
   or later.
 - **Species cap is 253.** Slot 252 is Gorochu; one remains. Past 253 requires
