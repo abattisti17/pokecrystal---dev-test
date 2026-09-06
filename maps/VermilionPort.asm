@@ -211,7 +211,6 @@ VermilionPortTruckScript:
 	closetext
 	waitsfx
 	playsound SFX_STRENGTH
-	applymovement VERMILIONPORT_TRUCK, VermilionPortTruckShiftMovement
 	pause 20
 	opentext
 	writetext VermilionPortTruckRevealText
@@ -255,10 +254,6 @@ VermilionPortTruckDoneScript:
 
 VermilionPortEndScript:
 	end
-
-VermilionPortTruckShiftMovement:
-	slow_step LEFT
-	step_end
 
 VermilionPortTruckText:
 	text "A cargo crate,"

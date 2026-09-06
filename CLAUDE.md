@@ -65,7 +65,31 @@ assembled without a single warning. Run the tests.
   placement against the `.blk` or objects render inside walls or water.
 - **`0c` is the only TILESET_FACILITY block with warp collision.** A
   `warp_event` coordinate does nothing if the block underneath isn't
-  collision-tagged as a warp.
+  collision-tagged as a warp. It's also *directional*
+  (`CheckDirectionalWarp` in `engine/overworld/tile_events.asm`): standing
+  on the tile isn't enough, the player has to press the matching direction
+  again once already on it.
+- **`changeblock x, y, block_id` takes tile coordinates, like every other
+  map-event macro — not the block-grid position you'd read off a `.blk`
+  ASCII layout.** Getting this wrong doesn't error, it silently edits the
+  wrong cell. If a `changeblock` looks like a no-op, dump
+  `wOverworldMapBlocks` before/after rather than assuming the command
+  itself is broken.
+- **A live `changeblock` may not update collision on a map too small to
+  scroll**, even paired with `refreshmap` (the pattern `TeamRocketBaseB2F`'s
+  locked door uses successfully on a large map). Confirmed by direct memory
+  read: the block byte was correctly rewritten, but the player stayed
+  blocked walking onto it in the same session. Swapping to `changeblock` +
+  `reloadmap` (a full reload) fixed it. Verify a same-screen block edit on
+  a small map before trusting `refreshmap` there.
+- **Don't `applymovement` a script-interactive object to imply "it moved."**
+  The Vermilion Port crate did this (shifted one tile via `slow_step` to
+  "reveal" a hollow) and went permanently dead to interaction afterward —
+  the shift landed it on the exact tile the (stationary) player was
+  standing on, and `CheckFacingObject` can never resolve a facing tile
+  equal to the player's own square, from any direction. The object was
+  never broken; it just became topologically unreachable. Let the dialogue
+  carry the "it moved" beat and leave the object's coordinate alone.
 - **Catching a Transformed Pokémon always yields a Ditto** — vanilla bug in
   `engine/items/item_effects.asm`. METRONOME can reach TRANSFORM; it is not
   in `MetronomeExcepts`.

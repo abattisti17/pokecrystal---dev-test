@@ -47,13 +47,34 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
       by matching vanilla's own pattern (see `Route36.asm`'s Sudowoodo
       script): resolve the result and set the event first, call
       `reloadmapafterbattle` last, in each branch.
-- [ ] **Hollow goes dead after the Mew battle.** Separate from the above: in
-      headless testing, once you've fought Mew and returned to the map, the
-      crate/hollow object stops responding to `A` entirely — no text, no
-      re-battle, nothing — even though other NPCs on the same map (tested:
-      the Super Nerd) remain interactive right after the same battle. Not
-      yet root-caused; needs on-device confirmation since PyBoy's object/
-      script emulation could conceivably differ from real hardware here.
+- [x] ~~Hollow goes dead after the Mew battle.~~ Root-caused: pushing the
+      crate ran `applymovement VERMILIONPORT_TRUCK, VermilionPortTruckShiftMovement`
+      (`slow_step LEFT`) to visually slide it aside. Devwarp (and the likely
+      real approach path) puts the player one tile to the crate's *left*, so
+      the shift landed the object on the exact tile the stationary player
+      was standing on. `CheckFacingObject` computes the tile the player is
+      facing and looks for an object there — it can never resolve to the
+      player's own square from any facing direction, so the object became
+      permanently unreachable, not broken. Confirmed via direct
+      `wObjectStructs` reads (`engine/overworld/npc_movement.asm`): the
+      object's `Walking`/`Flags` state was fine throughout; only its
+      `MapX`/`MapY` ended up co-located with the player's.
+
+      Fix: removed the `applymovement` (and its now-unused
+      `VermilionPortTruckShiftMovement` data) from `VermilionPortTruckScript`
+      in `maps/VermilionPort.asm`. The crate's sprite no longer visibly
+      slides — the reveal text still carries the "you pushed it aside"
+      beat — but the object's coordinate never changes, so it stays
+      interactive from the same approach angle indefinitely. Verified in
+      headless (PyBoy) testing: pushed the crate, fought and defeated Mew
+      (HP forced to 0 via direct memory write mid-battle to reach the
+      post-battle state deterministically, since automating a
+      button-navigated win/flee through the battle menu proved too flaky to
+      trust — devwarp's own `ENGINE_PLAINBADGE` also makes the level-50
+      Gorochu party member disobedient, which stalled an actual fought-out
+      battle indefinitely), then re-pressed `A` from the exact same tile
+      with no movement in between: the "hollow" text now shows correctly
+      every time. Not yet confirmed on real hardware.
 - [ ] **"Press B to catch" myth (v0.1 target, landed in v0.3.0).** Implemented
       per spec in `engine/items/item_effects.asm` (`.skip_hp_calc`, right
       before the catch roll) and `constants/battle_constants.asm`
