@@ -46,13 +46,17 @@ ADDR = {
     "wPartyMon1Moves": 0xDCE1,
     "wMoney": 0xD84E,
     "wNumBalls": 0xD8D7,
+    "wNumKeyItems": 0xD8BC,
 }
 
 CYNDAQUIL = 155
 GOROCHU = 252
 STRENGTH = 70
 SURF = 57
+FLAMETHROWER = 53
+SMOKESCREEN = 108
 ULTRA_BALL = 2
+S_S_TICKET = 68
 
 VERMILION_PORT = (15, 2)          # (map group, map number)
 TRANSFER_NETWORK_ENTRY = (27, 1)
@@ -111,16 +115,21 @@ def check_core(pb):
     money = (m[ADDR["wMoney"]] << 16) | (m[ADDR["wMoney"] + 1] << 8) | m[ADDR["wMoney"] + 2]
     ball_id = m[ADDR["wNumBalls"] + 1]
     ball_qty = m[ADDR["wNumBalls"] + 2]
+    # Key items are stored as (id, quantity) pairs terminated by $ff -- the id
+    # is every other byte, so a naive range() read misses the second item.
+    n_key = m[ADDR["wNumKeyItems"]]
+    key_items = [m[ADDR["wNumKeyItems"] + 1 + i * 2] for i in range(max(n_key, 0))]
 
     return [
         ("player name is DEV", name == "DEV"),
         ("two party members", party_count == 2),
         ("starter is Cyndaquil", species == CYNDAQUIL),
         ("slot 2 is Gorochu", species2 == GOROCHU),
-        ("starter knows Strength", STRENGTH in moves),
-        ("starter knows Surf", SURF in moves),
+        ("starter moveset is Flamethrower/Smokescreen/Surf/Strength",
+         moves == [FLAMETHROWER, SMOKESCREEN, SURF, STRENGTH]),
         ("testing money granted", money == 999999),
         ("Ultra Balls in Balls pocket", ball_id == ULTRA_BALL and ball_qty == 99),
+        ("S.S. Ticket in key items", S_S_TICKET in key_items),
     ]
 
 

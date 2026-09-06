@@ -411,8 +411,8 @@ VermilionPort_MapEvents:
 
 	def_bg_events
 	bg_event 16, 13, BGEVENT_ITEM, VermilionPortHiddenIron
-	bg_event 10, 30, BGEVENT_READ, VermilionPortTruckScript
-	bg_event 11, 30, BGEVENT_READ, VermilionPortTruckScript
+	bg_event 16, 14, BGEVENT_READ, VermilionPortTruckScript
+	bg_event 17, 14, BGEVENT_READ, VermilionPortTruckScript
 
 	def_object_events
 	object_event  7, 17, SPRITE_SAILOR, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VermilionPortSailorAtGangwayScript, EVENT_VERMILION_PORT_SAILOR_AT_GANGWAY

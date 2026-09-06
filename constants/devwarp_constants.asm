@@ -12,8 +12,11 @@ DEF DEVWARP_SPAWN      EQU SPAWN_VERMILION
 
 DEF DEVWARP_SPECIES    EQU CYNDAQUIL  ; the Pokemon you start with
 DEF DEVWARP_LEVEL      EQU 25         ; its level
-DEF DEVWARP_FIELD_MOVE   EQU STRENGTH ; written into move slot 4
-DEF DEVWARP_FIELD_MOVE_2 EQU SURF     ; written into move slot 3
+; Starter moveset, written directly into all four slots.
+DEF DEVWARP_MOVE_1 EQU FLAMETHROWER
+DEF DEVWARP_MOVE_2 EQU SMOKESCREEN
+DEF DEVWARP_MOVE_3 EQU SURF     ; HM, gated by ENGINE_FOGBADGE
+DEF DEVWARP_MOVE_4 EQU STRENGTH ; HM, gated by ENGINE_PLAINBADGE
 DEF DEVWARP_SPECIES_2  EQU GOROCHU    ; second party slot -- whatever is in progress
 DEF DEVWARP_LEVEL_2    EQU 50         ; its level
 DEF DEVWARP_GENDER     EQU 0          ; 0 = male, 1 = female
@@ -27,3 +30,4 @@ DEF DEVWARP_ITEM_1_QTY   EQU 99
 DEF DEVWARP_ITEM_2       EQU POTION
 DEF DEVWARP_ITEM_2_QTY   EQU 99
 DEF DEVWARP_KEY_ITEM     EQU BICYCLE  ; goes in the key items pocket
+DEF DEVWARP_KEY_ITEM_2   EQU S_S_TICKET

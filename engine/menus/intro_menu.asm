@@ -124,14 +124,19 @@ DevWarp_QuickStart:
 	farcall SetGiftPartyMonCaughtData
 
 	; overwrite move slot 4 with STRENGTH so field testing works immediately
-	ld a, DEVWARP_FIELD_MOVE
+	ld a, DEVWARP_MOVE_1
+	ld [wPartyMon1Moves + 0], a
+	ld a, DEVWARP_MOVE_2
+	ld [wPartyMon1Moves + 1], a
+	ld a, DEVWARP_MOVE_3
+	ld [wPartyMon1Moves + 2], a
+	ld a, DEVWARP_MOVE_4
 	ld [wPartyMon1Moves + 3], a
 	ld a, 15
-	ld [wPartyMon1PP + 3], a
-	ld a, DEVWARP_FIELD_MOVE_2
-	ld [wPartyMon1Moves + 2], a
-	ld a, 15
+	ld [wPartyMon1PP + 0], a
+	ld [wPartyMon1PP + 1], a
 	ld [wPartyMon1PP + 2], a
+	ld [wPartyMon1PP + 3], a
 
 	; second party slot -- for trying out whatever is being worked on
 	xor a ; PARTYMON
@@ -183,6 +188,13 @@ DevWarp_QuickStart:
 	call ReceiveItem
 
 	ld a, DEVWARP_KEY_ITEM
+	ld [wCurItem], a
+	ld a, 1
+	ld [wItemQuantityChange], a
+	ld hl, wNumKeyItems
+	call ReceiveItem
+
+	ld a, DEVWARP_KEY_ITEM_2
 	ld [wCurItem], a
 	ld a, 1
 	ld [wItemQuantityChange], a

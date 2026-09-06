@@ -61,6 +61,12 @@ assembled without a single warning. Run the tests.
 
 ## Pitfalls that have cost real time
 
+- **Reachability is not just tile collision — NPCs block their tile.** A flood
+  fill over `*_collision.asm` alone will report areas reachable that a player
+  cannot actually get to. The Vermilion Port gangway sailor at (7,17) plugs the
+  only route south single-handedly.
+- **Key items are stored as (id, quantity) pairs**, so ids are every *other*
+  byte after `wNumKeyItems`.
 - **Object coords are tile-based; block index is `(x/2, y/2)`.** Verify
   placement against the `.blk` or objects render inside walls or water.
 - **`0c` is the only TILESET_FACILITY block with warp collision.** A
