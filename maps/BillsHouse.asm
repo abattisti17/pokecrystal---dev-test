@@ -34,7 +34,7 @@ BillTransferNetworkScript:
 	writetext BillSendingText
 	waitbutton
 	closetext
-	warp TRANSFER_NETWORK_ENTRY, 4, 5
+	warp TRANSFER_NETWORK_ENTRY, 4, 3
 	end
 
 .Declined:

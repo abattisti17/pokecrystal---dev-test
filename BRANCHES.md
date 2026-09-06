@@ -80,16 +80,20 @@ Ordered by recommended build order — cheapest and least contested first.
   House (`maps/BillsHouse.asm`) — not Goldenrod Radio Tower as originally
   scoped here. Reframed around the PC transfer system (Bill's own domain in
   Gen 2) rather than a broadcast; same source myth (anime EP038), different
-  in-world mechanism. Three rooms: `TransferNetworkEntry`,
-  `TransferNetworkBlockade`, `TransferNetworkDeepNode` — all reuse existing
-  map layouts and tilesets (`RuinsOfAlphResearchCenter`'s and
-  `DragonShrine`'s block data, aliased in `data/maps/blocks.asm`), no new
-  tile art.
+  in-world mechanism. Three rooms: `TransferNetworkEntry` (6x6 blocks),
+  `TransferNetworkBlockade` (9x6 blocks), `TransferNetworkDeepNode` (6x8
+  blocks) — all real, hand-authored `.blk` layouts
+  (`maps/TransferNetwork*.blk`), sharing `TILESET_FACILITY` (Deep Node keeps
+  `PALETTE_NITE` for the darker approach corridor). No new tile art; every
+  block used already exists in that tileset. An earlier pass reused
+  `RuinsOfAlphResearchCenter`'s and `DragonShrine`'s block data outright —
+  same room wearing three labels — and was thrown out for that reason.
 - **Species:** none (Porygon exists, species 137) — removed from
   `SometimesFleeMons` in `data/wild/flee_mons.asm` so the quest reward can't
   just run off; see the comment there.
-- **Event flags:** 6 used from the "next 116" block (`EVENT_TRANSFER_NETWORK_*`,
-  `EVENT_FOUGHT_PORYGON`), 110 left in that block.
+- **Event flags:** 6 used from the "next 116" block (`EVENT_TRANSFER_NETWORK_EXPLAINED`,
+  `EVENT_FOUGHT_PORYGON`, `EVENT_TRANSFER_NETWORK_BREACH_OPENED`, and the
+  three item flags), 110 left in that block.
 - **Conflict risk:** low. Touches `maps/BillsHouse.asm` (added Bill as an
   NPC there — his grandfather's dialogue already establishes Bill is
   reachable by PC from Johto, so this doesn't contradict anything) and the
@@ -99,15 +103,42 @@ Ordered by recommended build order — cheapest and least contested first.
 - **DEVWARP_SPAWN** currently points here (`SPAWN_TRANSFER_NETWORK_ENTRY`).
   Repoint to `SPAWN_VERMILION` (or the next branch's own entry) before/at
   merge — see the resource table above.
-- **Gotcha for future branches reusing a map's block data:** the tile
-  *layout* being walkable isn't enough for a `warp_event` (walk-onto-tile
-  warp) to fire — the underlying tile also needs warp-type collision
-  (`CheckWarpCollision` in `engine/overworld/tile_events.asm`), which only
-  exists where the *source* map had a real door. A reused layout only has
-  warp-collision at that original door. Anywhere else you want to leave
-  from, use an `OBJECTTYPE_SCRIPT` object with a script-level `warp <map>,
-  x, y` command instead (no collision-type requirement). This cost real
-  time to find — don't rediscover it.
+- **Gotcha: `warp_event` needs warp-type collision on the tile itself.**
+  A tile being walkable isn't enough for a `warp_event` (walk-onto-tile
+  warp) to fire — the underlying block also needs warp-type collision
+  (`CheckWarpCollision` in `engine/overworld/tile_events.asm`). In
+  `TILESET_FACILITY`, block `$0c` is the only block carrying
+  `WARP_CARPET_DOWN`. Two things follow: (1) author `$0c` into the layout
+  wherever a walk-through transition belongs, or fall back to an
+  `OBJECTTYPE_SCRIPT` object with a script-level `warp <map>, x, y` command
+  (no collision-type requirement) for doorways that don't get a real tile;
+  (2) `WARP_CARPET_DOWN` is *directional* (`CheckDirectionalWarp` in the
+  same file) — standing on the tile isn't enough either, the player has to
+  press the matching direction (down, here) once already on it. Walking
+  onto it from the side does not fire it; walking onto it from above and
+  then pressing down again does.
+- **Gotcha: `changeblock` takes tile coordinates, not block coordinates.**
+  Despite `.blk` files and `object_event`/`warp_event`/`bg_event` using two
+  different coordinate systems (block index vs. tile, related by
+  `tile = 2 * block`), `changeblock x, y, block_id` wants **tile**
+  coordinates like every other map-event macro — not the block-grid
+  position you'd read off an ASCII layout. Getting this wrong doesn't
+  error; it silently edits the wrong block, which surfaced here as
+  `changeblock` appearing to do nothing (it was correctly rewriting some
+  *other* cell in the room). A live memory diff of `wOverworldMapBlocks`
+  is how this got caught.
+- **Gotcha: a live `changeblock` may not affect collision on the same
+  screen without a `reloadmap`.** `changeblock` + `refreshmap` (the pattern
+  `TeamRocketBaseB2F`'s locked door uses) writes the new block value
+  correctly, but on this map — small enough that it never scrolls — the
+  player's live movement permissions did not pick up the change: repeated
+  attempts to walk onto the now-floor tile stayed blocked even though the
+  byte in `wOverworldMapBlocks` was confirmed correct. Swapping to
+  `changeblock` + `reloadmap` (a full map reload, heavier than
+  `refreshmap` but unconditionally correct) fixed it. If a future branch
+  wants the lighter `refreshmap` path to work on a same-screen block edit,
+  budget time to verify it on a full-size map before trusting it on a
+  small one.
 
 ### 5. The Soldier's War — Lt. Surge
 - **Location:** Cerulean Cave entrance, veteran NPCs across the map

@@ -502,9 +502,9 @@ ENDM
 	endgroup
 
 	newgroup TRANSFER_NETWORK                                     ; 27
-	map_const TRANSFER_NETWORK_ENTRY,                       4,  4 ;  1
-	map_const TRANSFER_NETWORK_BLOCKADE,                    4,  4 ;  2
-	map_const TRANSFER_NETWORK_DEEP_NODE,                   5,  5 ;  3
+	map_const TRANSFER_NETWORK_ENTRY,                       6,  6 ;  1
+	map_const TRANSFER_NETWORK_BLOCKADE,                    9,  6 ;  2
+	map_const TRANSFER_NETWORK_DEEP_NODE,                   6,  8 ;  3
 	endgroup
 
 DEF NUM_MAP_GROUPS EQU const_value ; 27

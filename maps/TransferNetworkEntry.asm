@@ -1,5 +1,5 @@
 	object_const_def
-	const TRANSFERNETWORKENTRY_DOORWAY
+	const TRANSFERNETWORKENTRY_BACK_DOORWAY
 
 TransferNetworkEntry_MapScripts:
 	def_scene_scripts
@@ -12,15 +12,12 @@ TransferNetworkEntryHum:
 TransferNetworkEntryGlimpse:
 	jumptext TransferNetworkEntryGlimpseText
 
-TransferNetworkEntryCorridor:
-	jumptext TransferNetworkEntryCorridorText
-
-TransferNetworkEntryDoorwayScript:
+TransferNetworkEntryBackDoorwayScript:
 	opentext
-	writetext TransferNetworkEntryDoorwayText
+	writetext TransferNetworkEntryBackDoorwayText
 	waitbutton
 	closetext
-	warp TRANSFER_NETWORK_BLOCKADE, 2, 5
+	warp BILLS_HOUSE, 5, 4
 	end
 
 TransferNetworkEntryHumText:
@@ -38,33 +35,23 @@ TransferNetworkEntryGlimpseText:
 	line "look at you."
 	done
 
-TransferNetworkEntryCorridorText:
-	text "The corridor bends"
-	line "and rejoins itself"
-	cont "up ahead."
-
-	para "None of the angles"
-	line "are quite right."
-	done
-
-TransferNetworkEntryDoorwayText:
-	text "The corridor keeps"
-	line "going from here."
+TransferNetworkEntryBackDoorwayText:
+	text "The way back up is"
+	line "still open."
 	done
 
 TransferNetworkEntry_MapEvents:
 	db 0, 0 ; filler
 
 	def_warp_events
-	warp_event  2,  7, ROUTE_25, 1
-	warp_event  3,  7, ROUTE_25, 1
+	warp_event  4, 11, TRANSFER_NETWORK_BLOCKADE, 1
+	warp_event  5, 11, TRANSFER_NETWORK_BLOCKADE, 1
 
 	def_coord_events
 
 	def_bg_events
-	bg_event  6,  5, BGEVENT_READ, TransferNetworkEntryHum
-	bg_event  7,  4, BGEVENT_READ, TransferNetworkEntryGlimpse
-	bg_event  7,  1, BGEVENT_READ, TransferNetworkEntryCorridor
+	bg_event  4,  4, BGEVENT_READ, TransferNetworkEntryHum
+	bg_event  6,  4, BGEVENT_READ, TransferNetworkEntryGlimpse
 
 	def_object_events
-	object_event  6,  1, SPRITE_FAMICOM, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, TransferNetworkEntryDoorwayScript, -1
+	object_event  2,  3, SPRITE_FAMICOM, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, TransferNetworkEntryBackDoorwayScript, -1

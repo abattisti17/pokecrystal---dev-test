@@ -1,5 +1,4 @@
 	object_const_def
-	const TRANSFERNETWORKDEEPNODE_BACK_DOORWAY
 	const TRANSFERNETWORKDEEPNODE_SOURCE
 
 TransferNetworkDeepNode_MapScripts:
@@ -10,13 +9,8 @@ TransferNetworkDeepNode_MapScripts:
 TransferNetworkDeepNodeSighting:
 	jumptext TransferNetworkDeepNodeSightingText
 
-TransferNetworkDeepNodeBackDoorwayScript:
-	opentext
-	writetext TransferNetworkDeepNodeBackDoorwayText
-	waitbutton
-	closetext
-	warp TRANSFER_NETWORK_BLOCKADE, 3, 9
-	end
+TransferNetworkDeepNodeExitSign:
+	jumptext TransferNetworkDeepNodeExitSignText
 
 TransferNetworkDeepNodeSource:
 	checkevent EVENT_FOUGHT_PORYGON
@@ -57,7 +51,7 @@ TransferNetworkDeepNodeSightingText:
 	line "yet."
 	done
 
-TransferNetworkDeepNodeBackDoorwayText:
+TransferNetworkDeepNodeExitSignText:
 	text "The way back up is"
 	line "still open."
 	done
@@ -86,12 +80,15 @@ TransferNetworkDeepNode_MapEvents:
 	db 0, 0 ; filler
 
 	def_warp_events
+	warp_event  4,  3, TRANSFER_NETWORK_BLOCKADE, 3
+	warp_event  6, 15, TRANSFER_NETWORK_BLOCKADE, 2
+	warp_event  7, 15, TRANSFER_NETWORK_BLOCKADE, 2
 
 	def_coord_events
 
 	def_bg_events
-	bg_event  2,  4, BGEVENT_READ, TransferNetworkDeepNodeSighting
+	bg_event  3,  4, BGEVENT_READ, TransferNetworkDeepNodeSighting
+	bg_event  7, 14, BGEVENT_READ, TransferNetworkDeepNodeExitSign
 
 	def_object_events
-	object_event  4,  8, SPRITE_FAMICOM, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, TransferNetworkDeepNodeBackDoorwayScript, -1
-	object_event  5,  1, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, TransferNetworkDeepNodeSource, -1
+	object_event  4, 10, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, TransferNetworkDeepNodeSource, -1

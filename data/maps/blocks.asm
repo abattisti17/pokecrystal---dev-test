@@ -798,9 +798,13 @@ DarkCaveBlackthornEntrance_Blocks:
 	INCBIN "maps/DarkCaveBlackthornEntrance.blk"
 
 RuinsOfAlphResearchCenter_Blocks:
-TransferNetworkEntry_Blocks: ; reuses this layout -- see BRANCHES.md
-TransferNetworkBlockade_Blocks: ; also reuses this layout -- see BRANCHES.md
 	INCBIN "maps/RuinsOfAlphResearchCenter.blk"
+
+TransferNetworkEntry_Blocks:
+	INCBIN "maps/TransferNetworkEntry.blk"
+
+TransferNetworkBlockade_Blocks:
+	INCBIN "maps/TransferNetworkBlockade.blk"
 
 GoldenrodBikeShop_Blocks:
 	INCBIN "maps/GoldenrodBikeShop.blk"
@@ -1016,8 +1020,10 @@ RuinsOfAlphAerodactylWordRoom_Blocks:
 	INCBIN "maps/RuinsOfAlphAerodactylWordRoom.blk"
 
 DragonShrine_Blocks:
-TransferNetworkDeepNode_Blocks: ; reuses this layout -- see BRANCHES.md
 	INCBIN "maps/DragonShrine.blk"
+
+TransferNetworkDeepNode_Blocks:
+	INCBIN "maps/TransferNetworkDeepNode.blk"
 
 BattleTower1F_Blocks:
 	INCBIN "maps/BattleTower1F.blk"

@@ -17,8 +17,8 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 | Version stamping (`vX.Y.Z-<sha>`) | working |
 | Devwarp fast-start build | working; **currently spawns in the Transfer Network's Entry room**, not Vermilion Port — see BRANCHES.md and Open items below |
 | Mew under the crate, Vermilion Port | working, confirmed on device (v0.2.2 fixes the Ditto bug); **not reachable from devwarp on this branch** while `DEVWARP_SPAWN` points at the Transfer Network |
-| The Transfer Network — Porygon vignette | working in headless testing — three rooms, item pickups, DRAW-failsafe Porygon encounter; **map layout is placeholder, see Open items** |
-| Headless smoke test (PyBoy) in CI | working, 9 checks; walks the Transfer Network end to end. Mew/Vermilion coverage is not currently exercised by this branch's default devwarp build — see Open items
+| The Transfer Network — Porygon vignette | **working in headless testing** — three real, hand-authored rooms (not relabeled reuses), item pickups, a breach you have to open, DRAW-failsafe Porygon encounter; see Open items for exactly what is and isn't verified |
+| Headless smoke test (PyBoy) in CI | working, 9 checks; walks the Transfer Network end to end. Mew/Vermilion coverage is not currently exercised by this branch's default devwarp build — see Open items |
 | Gorochu — species slot 252 | plumbing done; placeholder sprite |
 | "Press B to catch" myth | code lands, builds clean; joypad-mirror bug found and fixed; net catch-rate effect still wants on-device confirmation — see note below |
 
@@ -101,67 +101,83 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 
 ### The Transfer Network — Porygon (v0.4.0)
 
-- [x] ~~Three rooms, reused tilesets, no new sprites.~~ `TransferNetworkEntry`,
-      `TransferNetworkBlockade`, and `TransferNetworkDeepNode` reuse
-      `RuinsOfAlphResearchCenter`'s and `DragonShrine`'s block data (aliased,
-      not duplicated) and `TILESET_FACILITY`/`TILESET_LAB`. No flashing
-      effects anywhere — static palettes only, per the hard safety
-      requirement in the brief.
+- [x] ~~Three real rooms, one shared tileset, no new sprites.~~ An earlier
+      pass reused `RuinsOfAlphResearchCenter`'s and `DragonShrine`'s block
+      data outright (aliased in `data/maps/blocks.asm`) — literally the same
+      room with three labels on it, which is why it played as "Bill's
+      office, Bill's office, dragon lair." That's been thrown out.
+      `TransferNetworkEntry` (6x6 blocks), `TransferNetworkBlockade` (9x6),
+      and `TransferNetworkDeepNode` (6x8) are now real, hand-authored `.blk`
+      files under `maps/`, all sharing `TILESET_FACILITY` (Deep Node keeps
+      `PALETTE_NITE`). No new tile art — every block used already exists in
+      that tileset. No flashing effects anywhere — static palettes only, per
+      the hard safety requirement in the brief.
 - [x] ~~Bill gates entry from Bill's House.~~ Added as a new NPC there
       (`BILLSHOUSE_BILL`); his grandfather's existing dialogue already
       explains Bill is reachable by PC from Johto, so this doesn't contradict
       anything already in the map.
+- [x] ~~The Blockade is an actual obstacle, not a room you walk through.~~
+      Row 3 of `TransferNetworkBlockade` is a solid run of machine blocks
+      (`$12`/`$16`) sealing the room in half. It stays sealed — collision and
+      all — until the player examines the breach (a `bg_event` at its
+      centre), which sets `EVENT_TRANSFER_NETWORK_BREACH_OPENED` and clears
+      that one block with `changeblock` + `reloadmap`. Confirmed in headless
+      testing: the tile is genuinely impassable beforehand and genuinely
+      walkable after, not just cosmetically different.
 - [x] ~~Porygon catchable with a DRAW failsafe.~~ Mirrors
       `VermilionPortMewBattleScript` exactly: `setevent EVENT_FOUGHT_PORYGON`
       before `reloadmapafterbattle`, both last in each branch. Confirmed in
       headless (PyBoy) testing: the battle triggers with the correct species
-      (137) at the correct map coordinates, and fleeing (DRAW) returns to the
-      overworld without setting the flag. Porygon was also removed from
+      (137) at the correct map coordinates. Porygon was also removed from
       `SometimesFleeMons` (see `data/wild/flee_mons.asm`) so the encounter
       itself can't just run off mid-battle.
 - [x] ~~Devwarp entry point.~~ `DEVWARP_SPAWN` is now a real constant (it
       wasn't before — this closes part of the old "arbitrary-tile devwarp"
       tooling gap below) and currently points at
-      `SPAWN_TRANSFER_NETWORK_ENTRY`. **This means devwarp no longer reaches
-      Vermilion Port / the Mew crate** until something repoints it back — see
-      BRANCHES.md's resource table.
-- [x] ~~Smoke test walks the network end to end.~~ 9 checks, PASSED
-      reproducibly across 3 consecutive runs: spawn location, party contents,
-      reaching Blockade, reaching Deep Node, and the Porygon battle
-      triggering with the right species. This is the same rigor the existing
-      Mew check had — battle *entry*, not a completed catch (see below).
+      `SPAWN_TRANSFER_NETWORK_ENTRY`, now at the real Entry room's spawn
+      tile `(4, 3)`. **This means devwarp no longer reaches Vermilion Port /
+      the Mew crate** until something repoints it back — see BRANCHES.md's
+      resource table.
+- [x] ~~Smoke test walks the network end to end.~~ Fully rewritten for the
+      new layouts (the old version's navigation was tuned to the discarded
+      reused rooms and is gone). 9 checks, PASSED reproducibly across 3
+      consecutive runs: spawn location, party contents, reaching Blockade
+      (via the real forward warp, not a script workaround), collecting an
+      item, opening the breach, reaching Deep Node, and the Porygon battle
+      triggering with the right species. Screenshots of all three rooms
+      confirm visually that none of them read as an office — see
+      `artifacts/smoke_0{1,2,3,4,5,6,7}_*.png`. This is the same rigor the
+      existing Mew check had — battle *entry*, not a completed catch (see
+      below).
 - [ ] **Not independently re-verified after the DRAW failsafe fires: does
       re-examining the source correctly show "it's gone quiet" (post-catch)
-      vs. re-battling (post-flee)?** I confirmed fleeing returns to the
-      overworld cleanly and does not set `EVENT_FOUGHT_PORYGON`, and the
-      underlying script is byte-for-byte the same shape as Mew's
-      already-proven pattern — but my own attempt to script a clean
-      re-examine round-trip got tangled in battle-menu RNG (a random AI
-      move burned a turn differently each run) before I could screenshot it
-      directly. Confidence is high given the code match to Mew, but this
-      wants an actual on-device or manual-emulator look before calling it
-      fully proven.
-- [ ] **Only the Ultra Ball pickup was individually confirmed** (picked up,
-      correctly went to the Ball Pocket — Poké Balls and TMs use a different
-      inventory list than regular Items, which briefly looked like a bug
-      until I checked the right pocket). The Revive, Ether, and TM Swift
-      itemballs use the identical `OBJECTTYPE_ITEMBALL` pattern at
-      similarly-confirmed-walkable coordinates, so they should behave the
-      same, but weren't each individually walked up to and collected in
-      testing.
-- [ ] **The "back doorway" objects** (return to the previous room from
-      Blockade and from Deep Node) use the same script-`warp` pattern as the
-      "go deeper" doorways, which *is* proven working — but the return
-      objects themselves weren't individually walked up to and triggered in
-      testing, only reasoned about by symmetry.
-- [ ] **On reused layouts, only `warp_event` (walk-onto-tile) needs real
-      warp-type tile collision — the destination of a script-level `warp`
-      command does not, and neither does object placement.** This was a real
-      bug hunt (a `warp_event` placed on ordinary floor silently never
-      fires — see `CheckWarpCollision` in
-      `engine/overworld/tile_events.asm`), now worked around by using
-      `OBJECTTYPE_SCRIPT` doorway objects for every in-network transition.
-      Documented in BRANCHES.md for the next branch reusing a map layout.
+      vs. re-battling (post-flee)?** The underlying script is byte-for-byte
+      the same shape as Mew's already-proven pattern, and fleeing was
+      confirmed to return to the overworld cleanly — but a scripted
+      re-examine round-trip wasn't captured directly. Confidence is high
+      given the code match to Mew, but this wants an actual on-device or
+      manual-emulator look before calling it fully proven.
+- [ ] **Only the Ether pickup was individually walked up to and collected
+      in the new layout's smoke test.** The Revive and TM Swift itemballs
+      use the identical `OBJECTTYPE_ITEMBALL` pattern at similarly-verified
+      floor tiles in the same room, so they should behave the same, but
+      weren't each individually collected in this pass.
+- [ ] **Entry's "back doorway" to Bill's House** (an `OBJECTTYPE_SCRIPT`
+      object, script-level `warp`) and the Blockade's own back-doorway to
+      Entry use the same pattern already proven for the network's forward
+      warps — but the return objects themselves weren't individually walked
+      up to and triggered in this pass, only reasoned about by symmetry.
+- [x] ~~`warp_event` needs warp-type tile collision, and it's directional.~~
+      Root-caused with the actual tileset data this time: in
+      `TILESET_FACILITY`, block `$0c` is the only block carrying
+      `WARP_CARPET_DOWN` collision, and that collision type is *directional*
+      — walking onto the tile isn't enough, you have to press the matching
+      direction again once standing on it (`CheckDirectionalWarp` in
+      `engine/overworld/tile_events.asm`). All three rooms now place `$0c`
+      at their real forward transitions and use genuine `warp_event`s there
+      (not the object/script workaround this used to require everywhere).
+      Full gotcha writeup, plus a related `changeblock` coordinate-units
+      gotcha found while wiring up the breach, in BRANCHES.md.
 - [ ] **Bill's post-quest dialogue** (`BillClearedText`, shown once
       `EVENT_FOUGHT_PORYGON` is set) was not exercised in testing — it's a
       straightforward `checkevent` branch matching the same pattern as
@@ -169,13 +185,11 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 
 ### Transfer Network vignette (pre-merge)
 
-- [ ] **Map layout is placeholder, not new content.** `TransferNetworkEntry`
-      and `TransferNetworkBlockade` both `INCBIN` the Ruins of Alph Research
-      Center's actual `.blk` file, unmodified. `TransferNetworkDeepNode` does
-      the same with Dragon Shrine. This is not "reusing the tileset" — it is
-      the same room, relabeled. Needs real hand-laid `.blk` layouts using the
-      tileset as the reusable asset, not the map. A tile-by-tile layout spec
-      is the next step, to be written up separately.
+- [x] ~~Map layout is placeholder, not new content.~~ Fixed — see "The
+      Transfer Network — Porygon (v0.4.0)" above. `TransferNetworkEntry`,
+      `TransferNetworkBlockade`, and `TransferNetworkDeepNode` are now real,
+      hand-authored `.blk` files, not aliases of `RuinsOfAlphResearchCenter`
+      or `DragonShrine`.
 - [ ] **Restore Mew coverage before merging to master.** `DEVWARP_SPAWN`
       points at the Transfer Network on this branch, and the smoke test's
       default checks were swapped from Vermilion/Mew to the network rather
