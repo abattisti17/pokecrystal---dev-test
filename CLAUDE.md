@@ -110,13 +110,47 @@ assembled without a single warning. Run the tests.
 - **`ReceiveItem` reads the item from `wCurItem`, not from `de`.** It routes
   to the correct pocket by the item's own attribute regardless of `hl`.
 - **The Gen 1 truck is a map block, not a sprite** — that is why it was never
-  interactive in Red/Blue. Ported here as `TILESET_PORT` block `$40` (tiles
-  96–103, lifted from pokered's `ship_port`). Interaction is a `bg_event`,
-  since a block cannot be an `object_event`.
-- **Adding tiles to a tileset means four files**: the `.png`, `_metatiles.bin`
-  (16 bytes per block), `_collision.asm` (one `tilecoll` per block), and
-  `_palette_map.asm` (one `tilepal` per 8 tiles). Miss one and it either
+  interactive in Red/Blue. Ported here as `TILESET_PORT_TRUCK` (a
+  Vermilion-only tileset, not the shared `TILESET_PORT` — see below) block
+  `$40`, tiles lifted from pokered's `ship_port`. Interaction is a
+  `bg_event`, since a block cannot be an `object_event`.
+- **Adding tiles to a tileset means six files, not four**: the tileset
+  constant (`constants/tileset_constants.asm`), the `Tilesets::` table entry
+  (`data/tilesets.asm`), the `.png` + `GFX`/`Meta`/`Coll` labels
+  (`gfx/tilesets.asm`), the `_metatiles.bin` (16 bytes per block),
+  `_collision.asm` (one `tilecoll` per block), and `_palette_map.asm` (one
+  `tilepal` per 8 tiles, registered via `gfx/tileset_palette_maps.asm`).
+  `data/tileset_anims.asm` too if the tileset needs animated tiles (even
+  just aliasing an existing `*Anim` for the water). Miss one and it either
   fails to assemble or renders with the wrong palette.
+- **`data/tilesets.asm`'s `Tilesets::` table starts with a dummy `Tileset0`
+  entry at position 0** (`constants/tileset_constants.asm` uses `const_def
+  1`), so a new tileset's table position is always its constant's value —
+  add the constant right before `NUM_TILESETS` is computed and the tileset
+  entry at the very end of the table, and they line up automatically. Get
+  this wrong and the map silently loads a *different* tileset's graphics.
+- **New tile indices ≥96 in a tileset are not safe to use for BG rendering,
+  even though `LoadTilesetGFX` (`home/map.asm`) clearly splits a tileset's
+  first 96 tiles into `vTiles2` and the next 96 into `vTiles5` (VRAM bank
+  1).** Every `*_palette_map.asm` file has a 16-byte `$ff` gap between its
+  bank-0 and bank-1 `tilepal` blocks, but `_LoadOverworldAttrmapPals`
+  (`engine/tilesets/map_palettes.asm`) indexes that file with a flat
+  `tile_id / 2`, landing tile 96 squarely in the gap rather than on its own
+  palette entry — confirmed by dumping the assembled ROM and finding the
+  real (bank 1, correct palette) bytes sitting exactly 16 bytes later than
+  where the lookup actually reads. Removing the gap for a *dedicated*
+  tileset "fixed" the math but tile 96 still rendered from the wrong VRAM
+  bank (PyBoy's own tile identifier confirmed it kept reading bank 0,
+  which was never loaded with that data) — this cost a long debugging
+  session and the root cause is still not fully nailed down. Don't spend
+  more time on it: reuse of an *existing*, already-tested tileset can use
+  its tiles ≥96 (they clearly work in vanilla Johto maps), but for **new**
+  tiles being added to any tileset, keep them under tile index 96. A
+  dedicated (single-map) tileset makes this easy — `git diff`-ing which of
+  its own tiles are actually referenced by that map's `.blk` against the
+  full 0–95 range reliably turns up more than enough free slots (22, for
+  Vermilion Port's own real usage, once its tileset stopped being shared
+  with CeruleanGym and OlivinePort).
 - **Pic banks 1–19 are at capacity.** New sprites go in `SECTION "Pics 20"`
   or later.
 - **Species cap is 253.** Slot 252 is Gorochu; one remains. Past 253 requires

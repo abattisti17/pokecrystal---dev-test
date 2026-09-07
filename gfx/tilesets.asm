@@ -335,3 +335,17 @@ INCBIN "data/tilesets/omanyte_word_room_metatiles.bin"
 
 TilesetAerodactylWordRoomMeta::
 INCBIN "data/tilesets/aerodactyl_word_room_metatiles.bin"
+
+
+SECTION "Tileset Data 9", ROMX
+
+; Lost Legends: Vermilion Port only, so the Gen 1 truck's 8 extra tiles
+; don't bloat CeruleanGym/OlivinePort, which also use TILESET_PORT.
+TilesetPortTruckGFX::
+INCBIN "gfx/tilesets/port_truck.2bpp.lz"
+
+TilesetPortTruckMeta::
+INCBIN "data/tilesets/port_truck_metatiles.bin"
+
+TilesetPortTruckColl::
+INCLUDE "data/tilesets/port_truck_collision.asm"

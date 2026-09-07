@@ -236,6 +236,48 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
       has a learnset but no evolution trigger, and nothing evolves into it yet.
 - [ ] **Obtain location.** Not placed in the world yet.
 
+### Vermilion Port truck tileset
+
+- [x] ~~The truck renders as a solid white block instead of a truck.~~ Three
+      prior attempts (v0.5.0–v0.5.2) got the pixel data right — copying the
+      8 tiles from pokered's `ship_port` tileset with PIL needed no format
+      conversion — but never got a visible truck, because the tiles were
+      placed at index 96+ in the tileset. Moved the truck to a dedicated,
+      Vermilion-only `TILESET_PORT_TRUCK` (freeing 22 bank-0 slots that
+      don't need to stay compatible with CeruleanGym/OlivinePort's own use
+      of the shared `TILESET_PORT`), and confirmed the new tileset
+      constant's table position lines up with its value — but the truck
+      was still white.
+- [x] ~~Root-caused: tile indices ≥96 aren't safe for new tiles, and it's
+      not (only) a table-alignment problem.~~ `LoadTilesetGFX`
+      (`home/map.asm`) splits a tileset's first 96 tiles into `vTiles2` and
+      the next 96 into `vTiles5` (VRAM bank 1) — so tiles ≥96 should be
+      just as valid as any other tile. But every `*_palette_map.asm` has a
+      16-byte `$ff` gap between its bank-0 and bank-1 halves, while
+      `_LoadOverworldAttrmapPals` (`engine/tilesets/map_palettes.asm`)
+      indexes the file with a flat `tile_id / 2` — landing tile 96 in that
+      gap, not on its own palette entry. Confirmed by dumping the compiled
+      ROM: the real palette bytes were sitting exactly 16 bytes later than
+      where the lookup actually reads. Removing the gap fixed the *offset*
+      but the truck still rendered white — PyBoy's own per-tile bank
+      reporting confirmed the game was still reading VRAM bank 0 (never
+      loaded with that data) for tile 96, not bank 1. The full mechanism
+      that's supposed to mark a BG tile as bank-1 is still not fully
+      understood; this wants a fresh pair of eyes rather than more time
+      spent on it now that there's a working alternative (below).
+- [x] ~~Fixed for real: keep new tiles under index 96.~~ A dedicated,
+      single-map tileset makes this easy to satisfy — diffing which tiles
+      Vermilion Port's own `.blk` actually references against the full
+      0–95 range turned up 22 genuinely free slots, comfortably more than
+      the 8 the truck needs. Moved the truck's tiles to slots 6–13 (all
+      bank 0, no VRAM-bank question at all) and it renders correctly.
+      Confirmed with a PyBoy screenshot — a clean build was not treated as
+      evidence, since all three prior attempts also built clean.
+      `gfx/tilesets/port.png` and its metatile/collision/palette-map
+      siblings were reverted to their pre-truck (96-tile) state, since
+      CeruleanGym and OlivinePort no longer need to carry the extra tiles
+      they never used.
+
 ### Devwarp
 
 - [x] Testing loadout: 999,999 money, 99x Ultra Ball, 99x Potion, Bicycle.
@@ -266,9 +308,10 @@ download artifact → sideload into SameBoy on iOS. No local machine required.
 - [ ] **In-ROM version stamp.** Filename versioning is external — rename the
       file and the link to the commit is gone. A version string on the title
       screen survives anything. Natural fit for v1.0's custom title screen.
-- [ ] **Custom crate/truck sprite.** Currently `SPRITE_FAMICOM` stands in as an
-      unmarked cargo crate. Works, but a purpose-drawn 16×16 overworld sprite
-      would be better.
+- [x] ~~Custom crate/truck sprite.~~ Superseded: the truck is no longer a
+      sprite at all. It's the real Gen 1 truck, ported as a map block (see
+      "Vermilion Port truck tileset" below) — matching how it actually
+      worked in Red/Blue, where the truck was scenery, not an object.
 - [ ] **Devwarp starter moveset is blunt.** `DEVWARP_FIELD_MOVE` overwrites move
       slot 4 outright, destroying whatever was there. Fine for testing; don't
       read anything into the starter's moves.

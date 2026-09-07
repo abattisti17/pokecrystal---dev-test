@@ -94,6 +94,7 @@ UnusedTilesetWaterAnim: ; unreferenced
 	tileframe WaitTileAnimation
 	tileframe DoneTileAnimation
 
+TilesetPortTruckAnim:
 TilesetPortAnim:
 	tileframe AnimateWaterTile,        vTiles2 tile $14
 	tileframe WaitTileAnimation
