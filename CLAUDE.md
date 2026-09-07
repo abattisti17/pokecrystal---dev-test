@@ -7,9 +7,13 @@ made real.
 
 ## Read first, every session
 
-- `ROADMAP.md` — current state and open items. Source of truth.
+- `DECISIONS.md` — what is in, cut, and tabled. **Supersedes the design bible
+  where they conflict.** Read before writing any content.
+- `ROADMAP.md` — current state and open items.
 - `BRANCHES.md` — resource claims. Check before using a species slot, pic
   bank, or event flag range.
+- `RESEARCH.md` — why the myths are built the way they are. Read before
+  changing how one works.
 
 Do not reconstruct project state by searching the repo. These two files are
 maintained for exactly that purpose. Update them in the same commit as the
