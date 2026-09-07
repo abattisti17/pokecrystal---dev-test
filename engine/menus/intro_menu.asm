@@ -194,13 +194,30 @@ DevWarp_QuickStart:
 	ld [wPartyMon4PP + 0], a
 .skip_fourth
 
-	; grant the badge that gates Strength
-	ld de, ENGINE_PLAINBADGE
+	; All 16 badges. wJohtoBadges/wKantoBadges (one flag_array byte each) is
+	; the badge CASE data -- checked for Pokemon obedience level caps and
+	; trainer dialogue. The ENGINE_*BADGE flags are a wholly separate
+	; system and are what actually gate field moves (PLAINBADGE->Strength,
+	; FOGBADGE->Surf, HIVEBADGE->Cut, GLACIERBADGE->Whirlpool,
+	; RISINGBADGE->Waterfall, STORMBADGE->Fly, ...). Granting one without
+	; the other leaves an empty badge case, or moves that still refuse to
+	; work, so both need setting.
+	ld a, $ff
+	ld [wJohtoBadges], a
+	ld [wKantoBadges], a
+
+	ld de, ENGINE_ZEPHYRBADGE ; first of 16 contiguous ENGINE_*BADGE flags
+	ld c, NUM_BADGES
+.badge_loop
+	push de
+	push bc
 	ld b, SET_FLAG
 	farcall EngineFlagAction
-	ld de, ENGINE_FOGBADGE ; gates SURF
-	ld b, SET_FLAG
-	farcall EngineFlagAction
+	pop bc
+	pop de
+	inc de
+	dec c
+	jr nz, .badge_loop
 
 	; money, for testing marts/prizes/etc without grinding
 	; wMoney is 3 plain bytes, big-endian (see NewGame's START_MONEY write
