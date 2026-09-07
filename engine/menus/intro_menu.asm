@@ -219,6 +219,38 @@ DevWarp_QuickStart:
 	dec c
 	jr nz, .badge_loop
 
+	; Pre-beat the Route 25 trainers standing between Vermilion and Bill's
+	; House, so the Transfer Network vignette is reachable without fighting
+	; through the whole route first. Does NOT touch the Misty date scene
+	; events on the same route -- those change map state, not just trainer
+	; flags. Route 24's Team Rocket grunt (Route24.asm) has no EVENT_BEAT_*
+	; of its own; EVENT_ROUTE_24_ROCKET is its object_event's own hide flag,
+	; so setting it achieves the same thing (never see him).
+	ld de, EVENT_BEAT_SCHOOLBOY_DUDLEY
+	ld b, SET_FLAG
+	call EventFlagAction
+	ld de, EVENT_BEAT_LASS_ELLEN
+	ld b, SET_FLAG
+	call EventFlagAction
+	ld de, EVENT_BEAT_SCHOOLBOY_JOE
+	ld b, SET_FLAG
+	call EventFlagAction
+	ld de, EVENT_BEAT_LASS_LAURA
+	ld b, SET_FLAG
+	call EventFlagAction
+	ld de, EVENT_BEAT_CAMPER_LLOYD
+	ld b, SET_FLAG
+	call EventFlagAction
+	ld de, EVENT_BEAT_LASS_SHANNON
+	ld b, SET_FLAG
+	call EventFlagAction
+	ld de, EVENT_BEAT_SUPER_NERD_PAT
+	ld b, SET_FLAG
+	call EventFlagAction
+	ld de, EVENT_ROUTE_24_ROCKET
+	ld b, SET_FLAG
+	call EventFlagAction
+
 	; money, for testing marts/prizes/etc without grinding
 	; wMoney is 3 plain bytes, big-endian (see NewGame's START_MONEY write
 	; just above in this same file) -- NOT packed BCD.
