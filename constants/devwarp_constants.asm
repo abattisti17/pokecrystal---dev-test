@@ -33,6 +33,18 @@ DEF DEVWARP_S3_MOVE_4  EQU HYPER_BEAM
 DEF DEVWARP_SPECIES_4  EQU PIDGEOT
 DEF DEVWARP_LEVEL_4    EQU 50
 DEF DEVWARP_S4_MOVE_1  EQU FLY
+
+; Slot 5: the HM slave. Covers the HMs nothing else in the party has --
+; Cyndaquil already carries Surf/Strength, Pidgeot carries Fly. Shuckle
+; can learn none of Cut/Whirlpool/Waterfall/Flash naturally; written
+; directly into its move slots anyway, same as Scyther's moveset above.
+DEF DEVWARP_SPECIES_5  EQU SHUCKLE
+DEF DEVWARP_LEVEL_5    EQU 50
+DEF DEVWARP_S5_MOVE_1  EQU CUT        ; HM, gated by ENGINE_HIVEBADGE
+DEF DEVWARP_S5_MOVE_2  EQU WHIRLPOOL  ; HM, gated by ENGINE_GLACIERBADGE
+DEF DEVWARP_S5_MOVE_3  EQU WATERFALL  ; HM, gated by ENGINE_RISINGBADGE
+DEF DEVWARP_S5_MOVE_4  EQU FLASH      ; HM, no badge gate
+
 DEF DEVWARP_GENDER     EQU 0          ; 0 = male, 1 = female
 DEF DEVWARP_HOUR       EQU 12         ; clock hour (0-23); 12 = daytime
 DEF DEVWARP_MINUTE     EQU 0          ; clock minute (0-59)

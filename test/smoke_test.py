@@ -44,6 +44,7 @@ ADDR = {
     "wPartyCount": 0xDCD7,
     "wPartySpecies": 0xDCD8,
     "wPartyMon1Moves": 0xDCE1,
+    "wPartyMon5Moves": 0xDDA1,
     "wMoney": 0xD84E,
     "wNumBalls": 0xD8D7,
     "wNumKeyItems": 0xD8BC,
@@ -51,8 +52,13 @@ ADDR = {
 
 CYNDAQUIL = 155
 GOROCHU = 252
+SHUCKLE = 213
 STRENGTH = 70
 SURF = 57
+CUT = 15
+WHIRLPOOL = 250
+WATERFALL = 127
+FLASH = 148
 FLAMETHROWER = 53
 SMOKESCREEN = 108
 ULTRA_BALL = 2
@@ -113,7 +119,9 @@ def check_core(pb):
     species2 = m[ADDR["wPartySpecies"] + 1]
     species3 = m[ADDR["wPartySpecies"] + 2]
     species4 = m[ADDR["wPartySpecies"] + 3]
+    species5 = m[ADDR["wPartySpecies"] + 4]
     moves = [m[ADDR["wPartyMon1Moves"] + i] for i in range(4)]
+    moves5 = [m[ADDR["wPartyMon5Moves"] + i] for i in range(4)]
     money = (m[ADDR["wMoney"]] << 16) | (m[ADDR["wMoney"] + 1] << 8) | m[ADDR["wMoney"] + 2]
     ball_id = m[ADDR["wNumBalls"] + 1]
     ball_qty = m[ADDR["wNumBalls"] + 2]
@@ -124,13 +132,16 @@ def check_core(pb):
 
     return [
         ("player name is DEV", name == "DEV"),
-        ("four party members", party_count == 4),
+        ("five party members", party_count == 5),
         ("starter is Cyndaquil", species == CYNDAQUIL),
         ("slot 2 is Gorochu", species2 == GOROCHU),
         ("slot 3 is the Scyther catcher", species3 == 123),
         ("slot 4 is the Pidgeot taxi", species4 == 18),
+        ("slot 5 is the Shuckle HM slave", species5 == SHUCKLE),
         ("starter moveset is Flamethrower/Smokescreen/Surf/Strength",
          moves == [FLAMETHROWER, SMOKESCREEN, SURF, STRENGTH]),
+        ("Shuckle knows Cut/Whirlpool/Waterfall/Flash",
+         moves5 == [CUT, WHIRLPOOL, WATERFALL, FLASH]),
         ("testing money granted", money == 999999),
         ("Ultra Balls in Balls pocket", ball_id == ULTRA_BALL and ball_qty == 99),
         ("S.S. Ticket in key items", S_S_TICKET in key_items),

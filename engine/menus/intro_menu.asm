@@ -194,6 +194,32 @@ DevWarp_QuickStart:
 	ld [wPartyMon4PP + 0], a
 .skip_fourth
 
+	; slot 5 -- the HM slave
+	xor a ; PARTYMON
+	ld [wMonType], a
+	ld a, DEVWARP_SPECIES_5
+	ld [wCurPartySpecies], a
+	ld a, DEVWARP_LEVEL_5
+	ld [wCurPartyLevel], a
+	predef TryAddMonToParty
+	jr nc, .skip_fifth
+	ld b, CAUGHT_BY_UNKNOWN
+	farcall SetGiftPartyMonCaughtData
+	ld a, DEVWARP_S5_MOVE_1
+	ld [wPartyMon5Moves + 0], a
+	ld a, DEVWARP_S5_MOVE_2
+	ld [wPartyMon5Moves + 1], a
+	ld a, DEVWARP_S5_MOVE_3
+	ld [wPartyMon5Moves + 2], a
+	ld a, DEVWARP_S5_MOVE_4
+	ld [wPartyMon5Moves + 3], a
+	ld a, 15
+	ld [wPartyMon5PP + 0], a
+	ld [wPartyMon5PP + 1], a
+	ld [wPartyMon5PP + 2], a
+	ld [wPartyMon5PP + 3], a
+.skip_fifth
+
 	; All 16 badges. wJohtoBadges/wKantoBadges (one flag_array byte each) is
 	; the badge CASE data -- checked for Pokemon obedience level caps and
 	; trainer dialogue. The ENGINE_*BADGE flags are a wholly separate
