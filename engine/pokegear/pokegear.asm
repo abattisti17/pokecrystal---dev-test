@@ -2101,7 +2101,19 @@ _FlyMap:
 	ret
 
 .ScrollNext:
+; Bail out after one full pass over the range instead of spinning forever
+; when no flypoint in it has been visited yet (e.g. a fresh devwarp save
+; before DevWarp_QuickStart's visited-spawns loop has run). Leaves the
+; cursor where it was; normal wrap-around is unchanged when a visited
+; flypoint exists.
 	ld hl, wTownMapPlayerIconLandmark
+	ld a, d
+	sub e
+	inc a
+	ld b, a
+	ld a, [hl]
+	push af
+.ScrollNextLoop:
 	ld a, [hl]
 	cp d
 	jr nz, .NotAtEndYet
@@ -2111,11 +2123,25 @@ _FlyMap:
 .NotAtEndYet:
 	inc [hl]
 	call CheckIfVisitedFlypoint
-	jr z, .ScrollNext
+	jr nz, .ScrollNextFound
+	dec b
+	jr nz, .ScrollNextLoop
+	pop af
+	ld [hl], a
+	ret
+.ScrollNextFound:
+	pop af
 	jr .Finally
 
 .ScrollPrev:
 	ld hl, wTownMapPlayerIconLandmark
+	ld a, d
+	sub e
+	inc a
+	ld b, a
+	ld a, [hl]
+	push af
+.ScrollPrevLoop:
 	ld a, [hl]
 	cp e
 	jr nz, .NotAtStartYet
@@ -2125,7 +2151,14 @@ _FlyMap:
 .NotAtStartYet:
 	dec [hl]
 	call CheckIfVisitedFlypoint
-	jr z, .ScrollPrev
+	jr nz, .ScrollPrevFound
+	dec b
+	jr nz, .ScrollPrevLoop
+	pop af
+	ld [hl], a
+	ret
+.ScrollPrevFound:
+	pop af
 .Finally:
 	call TownMapBubble
 	call WaitBGMap

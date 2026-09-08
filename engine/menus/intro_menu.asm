@@ -318,6 +318,26 @@ DevWarp_QuickStart:
 	ld [wItemQuantityChange], a
 	ld hl, wNumKeyItems
 	call ReceiveItem
+
+	; Fly's cursor search (_FlyMap.HandleDPad in engine/pokegear/pokegear.asm)
+	; walks wVisitedSpawns for a visited entry and never terminates if none
+	; exists. Devwarp never heals at a Pokemon Center -- the only place that
+	; normally sets these bits -- so mark every real spawn visited here.
+	; Bounded to SPAWN_HOME..NUM_SPAWNS-1 (the spawn table's own valid
+	; range): flag_array pads to a byte boundary, and filling those extra
+	; bits would let the cursor land on a spawn with no landmark.
+	ld c, SPAWN_HOME
+.visited_spawns_loop
+	push bc
+	ld hl, wVisitedSpawns
+	ld b, SET_FLAG
+	ld d, 0
+	predef SmallFarFlagAction
+	pop bc
+	inc c
+	ld a, c
+	cp NUM_SPAWNS
+	jr nz, .visited_spawns_loop
 	ret
 
 .DevName:
